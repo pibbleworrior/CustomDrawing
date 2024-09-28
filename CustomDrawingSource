@@ -78,8 +78,8 @@ function Line.new()
     -- Initialize properties for the line
     self.Thickness = 1
     self.Transparency = 0
-    self.From = nil
-    self.To = nil
+    self.From = Vector2.new(0, 0)
+    self.To = Vector2.new(100, 100)
     
     return self
 end
@@ -88,12 +88,6 @@ end
 function Line:update()
     if not self:shouldUpdate() then
         return  -- Skip update if it's not time yet
-    end
-
-    -- Ensure that From and To are valid
-    if not self.From or not self.To then
-        warn("From or To is nil, skipping update.")
-        return
     end
 
     -- Calculate the difference in X and Y coordinates
@@ -115,26 +109,17 @@ function Line:update()
     self.lastUpdateFrame = frameCounter
 end
 
--- Setters for Line properties
-function Line:setFrom(point)
-    self.From = point
-    self.needsUpdate = true
-end
-
-function Line:setTo(point)
-    self.To = point
-    self.needsUpdate = true
-end
-
-function Line:setThickness(value)
-    self.Thickness = value
-    self.needsUpdate = true
-end
-
-function Line:setTransparency(value)
-    self.Transparency = value
-    self.needsUpdate = true
-end
+-- Custom setters using __newindex for dynamic property updates
+setmetatable(Line, {
+    __newindex = function(self, key, value)
+        if key == "From" or key == "To" or key == "Thickness" or key == "Transparency" then
+            rawset(self, key, value)
+            self.needsUpdate = true  -- Mark for update
+        else
+            rawset(self, key, value)
+        end
+    end
+})
 
 -- Extend the module to allow for more shapes in the future
 CustomDrawing.Line = Line
@@ -144,7 +129,7 @@ RunService.Heartbeat:Connect(function()
     frameCounter = frameCounter + 1
 
     -- Example: If we had a list of objects to update, we could iterate through them
-    -- For now, you can manually call update on individual objects
+    -- For now, you can manually call update on individual objects when needed
 end)
 
 return CustomDrawing
