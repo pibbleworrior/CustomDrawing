@@ -35,8 +35,10 @@ function CustomDrawing.new(type, options)
         -- Initialize properties (public)
         self.Transparency = options.Transparency or 0  -- Default 0 (fully opaque)
         self.Thickness = options.Thickness or 1        -- Default 1 (smallest thickness)
-        self.From = options.From or Vector2.new(0, 0) -- Default starting point (top-left)
-        self.To = options.To or Vector2.new(100, 100) -- Default ending point
+
+        -- Ensure From and To are valid Vector2 values (default to (0,0) and (100,100) if nil)
+        self.From = options.From or Vector2.new(0, 0)
+        self.To = options.To or Vector2.new(100, 100)
 
         -- Draw the line based on the initial properties
         self:updateLine()
@@ -49,6 +51,12 @@ end
 
 -- Update the line based on its properties
 function CustomDrawing:updateLine()
+    -- Ensure that From and To are valid
+    if not self.From or not self.To then
+        warn("From or To is nil, skipping update.")
+        return
+    end
+
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
@@ -69,11 +77,21 @@ function CustomDrawing:__newindex(key, value)
         rawset(self, key, value)
         self:updateLine()
     elseif key == "From" then
-        rawset(self, key, value)
-        self:updateLine()
+        -- Ensure 'From' is a valid Vector2
+        if typeof(value) == "Vector2" then
+            rawset(self, key, value)
+            self:updateLine()
+        else
+            warn("Invalid value for 'From', must be Vector2")
+        end
     elseif key == "To" then
-        rawset(self, key, value)
-        self:updateLine()
+        -- Ensure 'To' is a valid Vector2
+        if typeof(value) == "Vector2" then
+            rawset(self, key, value)
+            self:updateLine()
+        else
+            warn("Invalid value for 'To', must be Vector2")
+        end
     else
         rawset(self, key, value)
     end
