@@ -105,12 +105,12 @@ function Text:update()
     if not self.Text or not self.Size or not self.Position then return end  -- Don't update unless necessary fields are set
 
     self.label.Text = self.Text
-    self.label.Font = self.Font
+    self.label.Font = self.Font or Enum.Font.SourceSans
     self.label.TextSize = self.Size
     self.label.TextTransparency = self.Transparency or 0
     self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
     self.label.TextStrokeTransparency = self.Outline and 0 or 1
-    self.label.TextStrokeColor3 = self.OutlineColor
+    self.label.TextStrokeColor3 = self.OutlineColor or Color3.new(0, 0, 0)
 
     if self.Center then
         self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
