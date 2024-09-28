@@ -48,7 +48,6 @@ function Line.new()
     self.From = Vector2.new(0, 0)
     self.To = Vector2.new(100, 100)
 
-    -- Initial update
     self:update()
     return self
 end
@@ -99,7 +98,6 @@ function Text.new()
     self.Position = Vector2.new(100, 100)
     self.Font = Enum.Font.SourceSans
 
-    -- Initial update
     self:update()
     return self
 end
@@ -141,10 +139,9 @@ function Circle.new()
     self.frame = Instance.new("Frame")
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White for visibility
     self.frame.Parent = self.screenGui
 
-    -- Add UICorner to round the frame (to make it a circle)
+    -- Add UICorner to round the frame
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
@@ -155,25 +152,22 @@ function Circle.new()
     self.Filled = true
     self.Position = Vector2.new(200, 200)
 
-    -- Initial update
     self:update()
     return self
 end
 
 function Circle:update()
-    -- Update the size and position of the circle
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     self.frame.BackgroundTransparency = self.Transparency
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
 
-    -- Handle outline or filled state
-    if self.Filled then
-        self.frame.BackgroundTransparency = self.Transparency
-        self.frame.BorderSizePixel = 0  -- No border when filled
+    if not self.Filled then
+        self.frame.BackgroundTransparency = 1
+        self.frame.BorderSizePixel = self.Thickness
+        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
     else
-        self.frame.BackgroundTransparency = 1  -- No background
-        self.frame.BorderSizePixel = self.Thickness  -- Use thickness as border
-        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)  -- White border by default
+        self.frame.BorderSizePixel = 0
     end
 end
 
