@@ -32,35 +32,16 @@ function CustomDrawing.new(type, options)
         self.lineFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility (can be changed)
         self.lineFrame.Parent = self.screenGui
 
-        -- Set default or initial properties
-        self._transparency = options.Transparency or 0  -- Default 0 (fully opaque)
-        self._thickness = options.Thickness or 1        -- Default 1 (smallest thickness)
-        self._from = options.From or Vector2.new(0, 0) -- Default starting point (top-left)
-        self._to = options.To or Vector2.new(100, 100) -- Default ending point
+        -- Initialize properties (public)
+        self.Transparency = options.Transparency or 0  -- Default 0 (fully opaque)
+        self.Thickness = options.Thickness or 1        -- Default 1 (smallest thickness)
+        self.From = options.From or Vector2.new(0, 0) -- Default starting point (top-left)
+        self.To = options.To or Vector2.new(100, 100) -- Default ending point
 
         -- Draw the line based on the initial properties
         self:updateLine()
 
-        return setmetatable(self, {
-            __index = self,
-            __newindex = function(t, key, value)
-                if key == "Transparency" then
-                    rawset(t, "_transparency", value)
-                    t:updateLine()
-                elseif key == "Thickness" then
-                    rawset(t, "_thickness", value)
-                    t:updateLine()
-                elseif key == "From" then
-                    rawset(t, "_from", value)
-                    t:updateLine()
-                elseif key == "To" then
-                    rawset(t, "_to", value)
-                    t:updateLine()
-                else
-                    rawset(t, key, value)
-                end
-            end
-        })
+        return self
     else
         error("Unsupported drawing type: " .. tostring(type))
     end
@@ -68,15 +49,34 @@ end
 
 -- Update the line based on its properties
 function CustomDrawing:updateLine()
-    local deltaX = self._to.X - self._from.X
-    local deltaY = self._to.Y - self._from.Y
+    local deltaX = self.To.X - self.From.X
+    local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
 
     -- Update size, position, transparency, and rotation
-    self.lineFrame.Size = UDim2.new(0, distance, 0, self._thickness)
-    self.lineFrame.Position = UDim2.new(0, (self._from.X + self._to.X) / 2, 0, (self._from.Y + self._to.Y) / 2)
+    self.lineFrame.Size = UDim2.new(0, distance, 0, self.Thickness)
+    self.lineFrame.Position = UDim2.new(0, (self.From.X + self.To.X) / 2, 0, (self.From.Y + self.To.Y) / 2)
     self.lineFrame.Rotation = math.deg(math.atan2(deltaY, deltaX))
-    self.lineFrame.BackgroundTransparency = self._transparency
+    self.lineFrame.BackgroundTransparency = self.Transparency
 end
 
-return CustomDrawing
+-- Create a custom metatable to update properties dynamically
+function CustomDrawing:__newindex(key, value)
+    if key == "Transparency" then
+        rawset(self, key, value)
+        self:updateLine()
+    elseif key == "Thickness" then
+        rawset(self, key, value)
+        self:updateLine()
+    elseif key == "From" then
+        rawset(self, key, value)
+        self:updateLine()
+    elseif key == "To" then
+        rawset(self, key, value)
+        self:updateLine()
+    else
+        rawset(self, key, value)
+    end
+end
+
+return setmetatable(CustomDrawing, {__call = CustomDrawing.new})
