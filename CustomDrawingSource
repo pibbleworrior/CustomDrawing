@@ -4,17 +4,23 @@ CustomDrawing.__index = CustomDrawing
 -- Helper function to find or create the ScreenGui in CoreGui
 local function getOrCreateScreenGui()
     local CoreGui = game:GetService("CoreGui")
+
+    -- Check if the ScreenGui already exists
     local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
-    
     if existingGui then
-        return existingGui  -- Reuse the existing ScreenGui
-    else
-        -- Create the ScreenGui
-        local screenGui = Instance.new("ScreenGui")
-        screenGui.Name = "CustomDrawingGui"
-        screenGui.Parent = CoreGui
-        return screenGui
+        return existingGui -- Reuse the existing ScreenGui
     end
+
+    -- Create a new ScreenGui and ensure it is created successfully
+    local screenGui = Instance.new("ScreenGui")
+    if not screenGui then
+        warn("Failed to create ScreenGui")
+        return nil -- Return nil if ScreenGui couldn't be created
+    end
+
+    screenGui.Name = "CustomDrawingGui"
+    screenGui.Parent = CoreGui
+    return screenGui
 end
 
 -- CustomDrawing.new("Line")
@@ -25,16 +31,21 @@ function CustomDrawing.new(type)
         -- Get or create the ScreenGui in CoreGui
         self.screenGui = getOrCreateScreenGui()
 
+        -- Ensure the ScreenGui is created successfully
+        if not self.screenGui then
+            error("Failed to get or create ScreenGui")
+        end
+
         -- Create the Frame to represent the line
         self.lineFrame = Instance.new("Frame")
         self.lineFrame.AnchorPoint = Vector2.new(0.5, 0.5)
         self.lineFrame.BorderSizePixel = 0
-        self.lineFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility (can be changed)
+        self.lineFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color for visibility
         self.lineFrame.Parent = self.screenGui
 
         -- Initialize default properties
-        self.Transparency = 0  -- Default fully opaque
-        self.Thickness = 1     -- Default smallest thickness
+        self.Transparency = 0 -- Default fully opaque
+        self.Thickness = 1 -- Default smallest thickness
         self.From = Vector2.new(0, 0) -- Default start point
         self.To = Vector2.new(100, 100) -- Default end point
 
