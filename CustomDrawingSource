@@ -1,7 +1,7 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
--- Function to create or get an existing ScreenGui in CoreGui
+-- Helper function to find or create a ScreenGui in CoreGui
 local function getOrCreateScreenGui()
     local CoreGui = game:GetService("CoreGui")
     local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
@@ -19,10 +19,10 @@ end
 -- CustomDrawing.new("Line") to create a new line
 function CustomDrawing.new(type)
     local self = setmetatable({}, CustomDrawing)
-    
+
     -- Create or reuse a ScreenGui
     self.screenGui = getOrCreateScreenGui()
-    
+
     -- Create a frame to represent the line
     if type == "Line" then
         self.frame = Instance.new("Frame")
@@ -47,12 +47,24 @@ end
 
 -- Function to update the line's visual properties
 function CustomDrawing:updateLine()
+    -- Ensure that From and To are valid
+    if not self.From or not self.To then
+        warn("From or To is nil, skipping update.")
+        return
+    end
+
+    -- Calculate the difference in X and Y coordinates
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
-    
+
+    -- Calculate the midpoint between From and To
+    local midX = (self.From.X + self.To.X) / 2
+    local midY = (self.From.Y + self.To.Y) / 2
+
+    -- Update the frame size, position, transparency, and rotation
     self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
-    self.frame.Position = UDim2.new(0, (self.From.X + self.To.X) / 2, 0, (self.From.Y + self.To.Y) / 2)
+    self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency
 end
