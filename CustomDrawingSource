@@ -42,7 +42,7 @@ function Line.new()
     self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
-    -- No default properties. The user must set all fields.
+    -- No default properties. You must set all fields.
     self.Thickness = nil
     self.Transparency = nil
     self.From = nil
@@ -52,7 +52,7 @@ function Line.new()
 end
 
 function Line:update()
-    if not self.From or not self.To or not self.Thickness then return end  -- Don't update if fields are missing
+    if not self.From or not self.To or not self.Thickness then return end -- Don't update unless necessary fields are set
 
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
@@ -65,15 +65,12 @@ function Line:update()
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency or 0
-
-    -- Ensure the line is always visible
-    self.frame.Visible = true
 end
 
 setmetatable(Line, {
     __newindex = function(self, key, value)
-        rawset(self, key, value)  -- Set the new value
-        self:update()  -- Automatically update the line whenever a field changes
+        rawset(self, key, value)
+        self:update() -- Automatically update when a field changes
     end
 })
 
@@ -88,10 +85,10 @@ function Text.new()
 
     -- Create the text label
     self.label = Instance.new("TextLabel")
-    self.label.BackgroundTransparency = 1  -- No background
+    self.label.BackgroundTransparency = 1 -- No background
     self.label.Parent = self.screenGui
 
-    -- No default properties. Everything is set by the user.
+    -- No default properties. You must set all fields.
     self.Text = nil
     self.Size = nil
     self.Transparency = nil
@@ -105,7 +102,7 @@ function Text.new()
 end
 
 function Text:update()
-    if not self.Text or not self.Size or not self.Position then return end  -- Don't update unless necessary fields are set
+    if not self.Text or not self.Size or not self.Position then return end -- Don't update unless necessary fields are set
 
     self.label.Text = self.Text
     self.label.Font = self.Font or Enum.Font.SourceSans
@@ -120,15 +117,12 @@ function Text:update()
     else
         self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     end
-
-    -- Ensure the text is always visible
-    self.label.Visible = true
 end
 
 setmetatable(Text, {
     __newindex = function(self, key, value)
-        rawset(self, key, value)  -- Set the new value
-        self:update()  -- Automatically update when a field changes
+        rawset(self, key, value)
+        self:update() -- Automatically update when a field changes
     end
 })
 
@@ -151,7 +145,7 @@ function Circle.new()
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
-    -- No default properties. Everything is set by the user.
+    -- No default properties. You must set all fields.
     self.Transparency = nil
     self.Thickness = nil
     self.Radius = nil
@@ -162,7 +156,7 @@ function Circle.new()
 end
 
 function Circle:update()
-    if not self.Radius or not self.Position then return end  -- Don't update unless necessary fields are set
+    if not self.Radius or not self.Position then return end -- Don't update unless necessary fields are set
 
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
@@ -176,15 +170,12 @@ function Circle:update()
     else
         self.frame.BorderSizePixel = 0
     end
-
-    -- Ensure the circle is always visible
-    self.frame.Visible = true
 end
 
 setmetatable(Circle, {
     __newindex = function(self, key, value)
-        rawset(self, key, value)  -- Set the new value
-        self:update()  -- Automatically update when a field changes
+        rawset(self, key, value)
+        self:update() -- Automatically update when a field changes
     end
 })
 
@@ -199,7 +190,7 @@ function CustomDrawing.new(drawType)
     elseif drawType == "Circle" then
         return Circle.new()
     else
-        error("Invalid draw type: " .. tostring(drawType)) -- Ensure valid draw types
+        error("Invalid draw type: " .. tostring(drawType))
     end
 end
 
