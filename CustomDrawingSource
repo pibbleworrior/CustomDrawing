@@ -3,8 +3,15 @@ CustomDrawing.__index = CustomDrawing
 
 local RunService = game:GetService("RunService")
 
--- Minimum time interval between updates (in seconds)
-local MIN_UPDATE_INTERVAL = 0.05 -- 50 milliseconds
+-- Frame interval to control how often the drawings update (every 2 frames, adjust as needed)
+local MIN_UPDATE_FRAMES = 2
+
+-- Global frame counter
+local frameCounter = 0
+
+-- Base class for drawing objects (common methods shared across shapes)
+local DrawingObject = {}
+DrawingObject.__index = DrawingObject
 
 -- Helper function to get or create a ScreenGui in CoreGui
 local function getOrCreateScreenGui()
@@ -21,45 +28,67 @@ local function getOrCreateScreenGui()
     end
 end
 
--- CustomDrawing.new("Line")
-function CustomDrawing.new(type)
-    local self = setmetatable({}, CustomDrawing)
-
+-- Common constructor for all drawing objects
+function DrawingObject.new()
+    local self = setmetatable({}, DrawingObject)
+    
     -- Create or reuse a ScreenGui
     self.screenGui = getOrCreateScreenGui()
+    
+    -- Throttling and frame control
+    self.lastUpdateFrame = 0  -- Keeps track of the last frame when the object was updated
+    self.needsUpdate = false  -- Flag to track if an update is pending
+    
+    return self
+end
 
-    -- Create a frame to represent the line
-    if type == "Line" then
-        self.frame = Instance.new("Frame")
-        self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-        self.frame.BorderSizePixel = 0  -- No border
-        self.frame.Parent = self.screenGui
+-- Method to check if an object needs to update based on the frame interval
+function DrawingObject:shouldUpdate()
+    if frameCounter - self.lastUpdateFrame >= MIN_UPDATE_FRAMES then
+        return true
+    end
+    return false
+end
 
-        -- Variables for throttling and debouncing
-        self.isUpdated = false
-        self.lastUpdateTime = 0  -- Keeps track of the last update time
-        self.debounceTime = 0     -- Time to debounce rapid updates
-        self.needsUpdate = false  -- Whether an update is pending
+-- Base update method (to be overridden by specific shapes)
+function DrawingObject:update()
+    -- This will be overridden in the shape-specific classes
+end
 
-        return self
-    else
-        error("Unsupported drawing type: " .. tostring(type))
+-- Method to destroy the drawing object
+function DrawingObject:destroy()
+    if self.frame then
+        self.frame:Destroy()
     end
 end
 
--- Function to actually update the line's visual properties (throttled and debounced)
-function CustomDrawing:updateLine()
-    local currentTime = tick()
+-- Line class (inherits from DrawingObject)
+local Line = setmetatable({}, { __index = DrawingObject })
 
-    -- Throttle updates to only happen after the minimum interval
-    if currentTime - self.lastUpdateTime < MIN_UPDATE_INTERVAL then
-        -- If it's too soon to update, mark as needing an update and debounce it
-        self.needsUpdate = true
-        return
+-- Constructor for Line
+function Line.new()
+    local self = DrawingObject.new()
+
+    -- Create the frame for the line
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0  -- No border
+    self.frame.Parent = self.screenGui
+
+    -- Initialize properties for the line
+    self.Thickness = 1
+    self.Transparency = 0
+    self.From = nil
+    self.To = nil
+    
+    return self
+end
+
+-- Update method for Line (called every N frames based on shouldUpdate logic)
+function Line:update()
+    if not self:shouldUpdate() then
+        return  -- Skip update if it's not time yet
     end
-
-    -- Reset debounce flag
-    self.needsUpdate = false
 
     -- Ensure that From and To are valid
     if not self.From or not self.To then
@@ -82,64 +111,40 @@ function CustomDrawing:updateLine()
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency
 
-    -- Update the last update time
-    self.lastUpdateTime = currentTime
-
-    -- Reset update flag after drawing
-    self.isUpdated = false
+    -- Mark the last update frame
+    self.lastUpdateFrame = frameCounter
 end
 
--- Debounce handling for pending updates
-function CustomDrawing:processPendingUpdates()
-    if self.needsUpdate then
-        self:updateLine()
-    end
+-- Setters for Line properties
+function Line:setFrom(point)
+    self.From = point
+    self.needsUpdate = true
 end
 
--- Setters to dynamically update properties (debounced to handle rapid changes)
-function CustomDrawing:setFrom(point)
-    if self.From ~= point then
-        self.From = point
-        self.isUpdated = true
-        self:updateLine()
-    end
+function Line:setTo(point)
+    self.To = point
+    self.needsUpdate = true
 end
 
-function CustomDrawing:setTo(point)
-    if self.To ~= point then
-        self.To = point
-        self.isUpdated = true
-        self:updateLine()
-    end
+function Line:setThickness(value)
+    self.Thickness = value
+    self.needsUpdate = true
 end
 
-function CustomDrawing:setThickness(value)
-    if self.Thickness ~= value then
-        self.Thickness = value
-        self.isUpdated = true
-        self:updateLine()
-    end
+function Line:setTransparency(value)
+    self.Transparency = value
+    self.needsUpdate = true
 end
 
-function CustomDrawing:setTransparency(value)
-    if self.Transparency ~= value then
-        self.Transparency = value
-        self.isUpdated = true
-        self:updateLine()
-    end
-end
+-- Extend the module to allow for more shapes in the future
+CustomDrawing.Line = Line
 
--- Function to destroy the drawing
-function CustomDrawing:destroy()
-    if self.frame then
-        self.frame:Destroy()
-    end
-end
-
--- Connect to RunService.Heartbeat to handle debouncing
+-- Handle global frame counting and updating of all objects
 RunService.Heartbeat:Connect(function()
-    -- Check for any pending updates that need to be processed
-    CustomDrawing:processPendingUpdates()
+    frameCounter = frameCounter + 1
+
+    -- Example: If we had a list of objects to update, we could iterate through them
+    -- For now, you can manually call update on individual objects
 end)
 
 return CustomDrawing
