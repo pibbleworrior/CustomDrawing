@@ -70,18 +70,18 @@ end
 -- Custom setters for dynamic property updates
 function CustomDrawing:setTransparency(value)
     self.Transparency = value
-    self:updateLine()
+    self:updateLine() -- Immediately update the line when Transparency is changed
 end
 
 function CustomDrawing:setThickness(value)
     self.Thickness = value
-    self:updateLine()
+    self:updateLine() -- Immediately update the line when Thickness is changed
 end
 
 function CustomDrawing:setFrom(value)
     if typeof(value) == "Vector2" then
         self.From = value
-        self:updateLine()
+        self:updateLine() -- Immediately update the line when From is changed
     else
         warn("Invalid value for 'From', must be Vector2")
     end
@@ -90,7 +90,7 @@ end
 function CustomDrawing:setTo(value)
     if typeof(value) == "Vector2" then
         self.To = value
-        self:updateLine()
+        self:updateLine() -- Immediately update the line when To is changed
     else
         warn("Invalid value for 'To', must be Vector2")
     end
