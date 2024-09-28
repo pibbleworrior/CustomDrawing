@@ -1,12 +1,7 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
-local RunService = game:GetService("RunService")
-
--- Frame interval to control how often the drawings update (every 2 frames, adjust as needed)
-local MIN_UPDATE_FRAMES = 2
-
--- Global frame counter
+-- Global frame counter, incremented by the user if needed
 local frameCounter = 0
 
 -- Base class for drawing objects (common methods shared across shapes)
@@ -36,18 +31,9 @@ function DrawingObject.new()
     self.screenGui = getOrCreateScreenGui()
     
     -- Throttling and frame control
-    self.lastUpdateFrame = 0  -- Keeps track of the last frame when the object was updated
     self.needsUpdate = false  -- Flag to track if an update is pending
     
     return self
-end
-
--- Method to check if an object needs to update based on the frame interval
-function DrawingObject:shouldUpdate()
-    if frameCounter - self.lastUpdateFrame >= MIN_UPDATE_FRAMES then
-        return true
-    end
-    return false
 end
 
 -- Base update method (to be overridden by specific shapes)
@@ -73,6 +59,7 @@ function Line.new()
     self.frame = Instance.new("Frame")
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0  -- No border
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Make the line red by default
     self.frame.Parent = self.screenGui
 
     -- Initialize properties for the line
@@ -84,10 +71,12 @@ function Line.new()
     return self
 end
 
--- Update method for Line (called every N frames based on shouldUpdate logic)
+-- Update method for Line
 function Line:update()
-    if not self:shouldUpdate() then
-        return  -- Skip update if it's not time yet
+    -- Ensure that From and To are valid
+    if not self.From or not self.To then
+        warn("From or To is nil, skipping update.")
+        return
     end
 
     -- Calculate the difference in X and Y coordinates
@@ -104,9 +93,6 @@ function Line:update()
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency
-
-    -- Mark the last update frame
-    self.lastUpdateFrame = frameCounter
 end
 
 -- Custom setters using __newindex for dynamic property updates
@@ -114,7 +100,7 @@ setmetatable(Line, {
     __newindex = function(self, key, value)
         if key == "From" or key == "To" or key == "Thickness" or key == "Transparency" then
             rawset(self, key, value)
-            self.needsUpdate = true  -- Mark for update
+            self:update()  -- Automatically trigger an update when a property changes
         else
             rawset(self, key, value)
         end
@@ -123,13 +109,5 @@ setmetatable(Line, {
 
 -- Extend the module to allow for more shapes in the future
 CustomDrawing.Line = Line
-
--- Handle global frame counting and updating of all objects
-RunService.Heartbeat:Connect(function()
-    frameCounter = frameCounter + 1
-
-    -- Example: If we had a list of objects to update, we could iterate through them
-    -- For now, you can manually call update on individual objects when needed
-end)
 
 return CustomDrawing
