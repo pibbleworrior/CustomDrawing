@@ -32,13 +32,11 @@ function CustomDrawing.new(type, options)
         self.lineFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility (can be changed)
         self.lineFrame.Parent = self.screenGui
 
-        -- Initialize properties (public)
+        -- Initialize properties with defaults if not provided
         self.Transparency = options.Transparency or 0  -- Default 0 (fully opaque)
         self.Thickness = options.Thickness or 1        -- Default 1 (smallest thickness)
-
-        -- Ensure From and To are valid Vector2 values (default to (0,0) and (100,100) if nil)
-        self.From = options.From or Vector2.new(0, 0)
-        self.To = options.To or Vector2.new(100, 100)
+        self.From = options.From or Vector2.new(0, 0) -- Default starting point (top-left)
+        self.To = options.To or Vector2.new(100, 100) -- Default ending point
 
         -- Draw the line based on the initial properties
         self:updateLine()
@@ -69,32 +67,34 @@ function CustomDrawing:updateLine()
 end
 
 -- Create a custom metatable to update properties dynamically
-function CustomDrawing:__newindex(key, value)
-    if key == "Transparency" then
-        rawset(self, key, value)
-        self:updateLine()
-    elseif key == "Thickness" then
-        rawset(self, key, value)
-        self:updateLine()
-    elseif key == "From" then
-        -- Ensure 'From' is a valid Vector2
-        if typeof(value) == "Vector2" then
-            rawset(self, key, value)
-            self:updateLine()
+setmetatable(CustomDrawing, {
+    __newindex = function(t, key, value)
+        if key == "Transparency" then
+            rawset(t, key, value)
+            t:updateLine()
+        elseif key == "Thickness" then
+            rawset(t, key, value)
+            t:updateLine()
+        elseif key == "From" then
+            -- Ensure 'From' is a valid Vector2
+            if typeof(value) == "Vector2" then
+                rawset(t, key, value)
+                t:updateLine()
+            else
+                warn("Invalid value for 'From', must be Vector2")
+            end
+        elseif key == "To" then
+            -- Ensure 'To' is a valid Vector2
+            if typeof(value) == "Vector2" then
+                rawset(t, key, value)
+                t:updateLine()
+            else
+                warn("Invalid value for 'To', must be Vector2")
+            end
         else
-            warn("Invalid value for 'From', must be Vector2")
+            rawset(t, key, value)
         end
-    elseif key == "To" then
-        -- Ensure 'To' is a valid Vector2
-        if typeof(value) == "Vector2" then
-            rawset(self, key, value)
-            self:updateLine()
-        else
-            warn("Invalid value for 'To', must be Vector2")
-        end
-    else
-        rawset(self, key, value)
     end
-end
+})
 
-return setmetatable(CustomDrawing, {__call = CustomDrawing.new})
+return CustomDrawing
