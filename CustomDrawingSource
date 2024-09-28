@@ -55,6 +55,7 @@ function CustomDrawing:updateLine()
         return
     end
 
+    -- Calculate the difference in X and Y coordinates
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
@@ -66,35 +67,33 @@ function CustomDrawing:updateLine()
     self.lineFrame.BackgroundTransparency = self.Transparency
 end
 
--- Create a custom metatable to update properties dynamically
-setmetatable(CustomDrawing, {
-    __newindex = function(t, key, value)
-        if key == "Transparency" then
-            rawset(t, key, value)
-            t:updateLine()
-        elseif key == "Thickness" then
-            rawset(t, key, value)
-            t:updateLine()
-        elseif key == "From" then
-            -- Ensure 'From' is a valid Vector2
-            if typeof(value) == "Vector2" then
-                rawset(t, key, value)
-                t:updateLine()
-            else
-                warn("Invalid value for 'From', must be Vector2")
-            end
-        elseif key == "To" then
-            -- Ensure 'To' is a valid Vector2
-            if typeof(value) == "Vector2" then
-                rawset(t, key, value)
-                t:updateLine()
-            else
-                warn("Invalid value for 'To', must be Vector2")
-            end
-        else
-            rawset(t, key, value)
-        end
+-- Custom setters for dynamic property updates
+function CustomDrawing:setTransparency(value)
+    self.Transparency = value
+    self:updateLine()
+end
+
+function CustomDrawing:setThickness(value)
+    self.Thickness = value
+    self:updateLine()
+end
+
+function CustomDrawing:setFrom(value)
+    if typeof(value) == "Vector2" then
+        self.From = value
+        self:updateLine()
+    else
+        warn("Invalid value for 'From', must be Vector2")
     end
-})
+end
+
+function CustomDrawing:setTo(value)
+    if typeof(value) == "Vector2" then
+        self.To = value
+        self:updateLine()
+    else
+        warn("Invalid value for 'To', must be Vector2")
+    end
+end
 
 return CustomDrawing
