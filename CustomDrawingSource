@@ -16,7 +16,7 @@ local function getOrCreateScreenGui()
     end
 end
 
--- Base class for drawing objects (common methods shared across shapes)
+-- Base class for drawing objects
 local DrawingObject = {}
 DrawingObject.__index = DrawingObject
 
@@ -66,32 +66,6 @@ function Line:update()
     self.frame.BackgroundTransparency = self.Transparency
 end
 
-function Line:setFrom(point)
-    self.From = point
-    self:update()
-end
-
-function Line:setTo(point)
-    self.To = point
-    self:update()
-end
-
-function Line:setThickness(value)
-    self.Thickness = value
-    self:update()
-end
-
-function Line:setTransparency(value)
-    self.Transparency = value
-    self:update()
-end
-
-function Line:destroy()
-    if self.frame then
-        self.frame:Destroy()
-    end
-end
-
 ------------------------------------------------
 -- Text class (inherits from DrawingObject)
 ------------------------------------------------
@@ -138,56 +112,6 @@ function Text:update()
     end
 end
 
-function Text:setText(value)
-    self.Text = value
-    self:update()
-end
-
-function Text:setSize(value)
-    self.Size = value
-    self:update()
-end
-
-function Text:setTransparency(value)
-    self.Transparency = value
-    self:update()
-end
-
-function Text:setCenter(value)
-    self.Center = value
-    self:update()
-end
-
-function Text:setOutline(value)
-    self.Outline = value
-    self:update()
-end
-
-function Text:setOutlineColor(value)
-    self.OutlineColor = value
-    self:update()
-end
-
-function Text:setPosition(value)
-    self.Position = value
-    self:update()
-end
-
-function Text:getTextBounds()
-    return self.label.TextBounds
-end
-
-function Text:setFont(value)
-    self.Font = value
-    self:update()
-end
-
-function Text:destroy()
-    if self.label then
-        self.label:Destroy()
-    end
-end
-
 ------------------------------------------------
 -- Circle class (inherits from DrawingObject)
 ------------------------------------------------
@@ -210,7 +134,6 @@ function Circle.new()
     -- Default properties
     self.Transparency = 0
     self.Thickness = 1
-    self.NumSides = 40  -- Sides approximation for the future
     self.Radius = 50
     self.Filled = true
     self.Position = Vector2.new(200, 200)
@@ -234,45 +157,19 @@ function Circle:update()
     end
 end
 
-function Circle:setTransparency(value)
-    self.Transparency = value
-    self:update()
-end
-
-function Circle:setThickness(value)
-    self.Thickness = value
-    self:update()
-end
-
-function Circle:setNumSides(value)
-    self.NumSides = value
-    self:update()
-end
-
-function Circle:setRadius(value)
-    self.Radius = value
-    self:update()
-end
-
-function Circle:setFilled(value)
-    self.Filled = value
-    self:update()
-end
-
-function Circle:setPosition(value)
-    self.Position = value
-    self:update()
-end
-
-function Circle:destroy()
-    if self.frame then
-        self.frame:Destroy()
+------------------------------------------------
+-- CustomDrawing creation logic
+------------------------------------------------
+function CustomDrawing.new(drawType)
+    if drawType == "Line" then
+        return Line.new()
+    elseif drawType == "Text" then
+        return Text.new()
+    elseif drawType == "Circle" then
+        return Circle.new()
+    else
+        error("Invalid draw type: " .. tostring(drawType))
     end
 end
-
--- Add Line, Text, and Circle classes to the CustomDrawing module
-CustomDrawing.Line = Line
-CustomDrawing.Text = Text
-CustomDrawing.Circle = Circle
 
 return CustomDrawing
