@@ -42,20 +42,17 @@ function Line.new()
     self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
-    -- Default properties for the line
-    self.Thickness = 1
-    self.Transparency = 0
-    self.From = Vector2.new(0, 0)
-    self.To = Vector2.new(100, 100)
+    -- No default properties. Everything is set by the user.
+    self.Thickness = nil
+    self.Transparency = nil
+    self.From = nil
+    self.To = nil
 
-    -- Manually update after creation
-    self:update()
     return self
 end
 
 function Line:update()
-    if not self.From or not self.To then return end  -- Ensure the fields are set before updating
-
+    if not self.From or not self.To then return end  -- Don't update if From and To aren't set
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
@@ -63,16 +60,16 @@ function Line:update()
     local midX = (self.From.X + self.To.X) / 2
     local midY = (self.From.Y + self.To.Y) / 2
 
-    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
+    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness or 1)
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
-    self.frame.BackgroundTransparency = self.Transparency
+    self.frame.BackgroundTransparency = self.Transparency or 0
 end
 
 setmetatable(Line, {
     __newindex = function(self, key, value)
         rawset(self, key, value)  -- Set the new value
-        self:update()  -- Automatically update the line whenever a field changes
+        self:update()  -- Automatically update when a field changes
     end
 })
 
@@ -88,35 +85,30 @@ function Text.new()
     -- Create the text label
     self.label = Instance.new("TextLabel")
     self.label.BackgroundTransparency = 1  -- No background
-    self.label.TextStrokeTransparency = 1  -- Outline initially disabled
     self.label.Parent = self.screenGui
 
-    -- Default properties
-    self.Text = "Sample Text"
-    self.Size = 24
-    self.Transparency = 0
-    self.Center = false
-    self.Outline = false
-    self.OutlineColor = Color3.new(0, 0, 0)
-    self.Position = Vector2.new(100, 100)
-    self.Font = Enum.Font.SourceSans
+    -- No default properties. Everything is set by the user.
+    self.Text = nil
+    self.Size = nil
+    self.Transparency = nil
+    self.Center = nil
+    self.Outline = nil
+    self.OutlineColor = nil
+    self.Position = nil
+    self.Font = nil
 
-    -- Manually update after creation
-    self:update()
     return self
 end
 
 function Text:update()
-    if not self.Text or not self.Size or not self.Position then return end  -- Ensure necessary fields are set
-
+    if not self.Text or not self.Size or not self.Position then return end  -- Don't update unless necessary fields are set
     self.label.Text = self.Text
-    self.label.Font = self.Font
+    self.label.Font = self.Font or Enum.Font.SourceSans
     self.label.TextSize = self.Size
-    self.label.TextTransparency = self.Transparency
+    self.label.TextTransparency = self.Transparency or 0
     self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
     self.label.TextStrokeTransparency = self.Outline and 0 or 1
-    self.label.TextStrokeColor3 = self.OutlineColor
-    self.label.Size = UDim2.new(0, self.label.TextBounds.X, 0, self.label.TextBounds.Y)
+    self.label.TextStrokeColor3 = self.OutlineColor or Color3.new(0, 0, 0)
 
     if self.Center then
         self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
@@ -128,7 +120,7 @@ end
 setmetatable(Text, {
     __newindex = function(self, key, value)
         rawset(self, key, value)  -- Set the new value
-        self:update()  -- Automatically update the text whenever a field changes
+        self:update()  -- Automatically update when a field changes
     end
 })
 
@@ -151,29 +143,26 @@ function Circle.new()
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
-    -- Default properties
-    self.Transparency = 0
-    self.Thickness = 1
-    self.Radius = 50
-    self.Filled = true
-    self.Position = Vector2.new(200, 200)
+    -- No default properties. Everything is set by the user.
+    self.Transparency = nil
+    self.Thickness = nil
+    self.Radius = nil
+    self.Filled = nil
+    self.Position = nil
 
-    -- Manually update after creation
-    self:update()
     return self
 end
 
 function Circle:update()
-    if not self.Radius or not self.Position then return end  -- Ensure necessary fields are set
-
+    if not self.Radius or not self.Position then return end  -- Don't update unless necessary fields are set
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
-    self.frame.BackgroundTransparency = self.Transparency
+    self.frame.BackgroundTransparency = self.Transparency or 0
     self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
 
     if not self.Filled then
         self.frame.BackgroundTransparency = 1
-        self.frame.BorderSizePixel = self.Thickness
+        self.frame.BorderSizePixel = self.Thickness or 1
         self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
     else
         self.frame.BorderSizePixel = 0
@@ -183,7 +172,7 @@ end
 setmetatable(Circle, {
     __newindex = function(self, key, value)
         rawset(self, key, value)  -- Set the new value
-        self:update()  -- Automatically update the circle whenever a field changes
+        self:update()  -- Automatically update when a field changes
     end
 })
 
