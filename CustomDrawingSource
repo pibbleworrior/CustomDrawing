@@ -48,7 +48,6 @@ function Line.new()
     self.From = Vector2.new(0, 0)
     self.To = Vector2.new(100, 100)
 
-    self:update()
     return self
 end
 
@@ -65,6 +64,13 @@ function Line:update()
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency
 end
+
+setmetatable(Line, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically update when any property changes
+    end
+})
 
 ------------------------------------------------
 -- Text class (inherits from DrawingObject)
@@ -91,7 +97,6 @@ function Text.new()
     self.Position = Vector2.new(100, 100)
     self.Font = Enum.Font.SourceSans
 
-    self:update()
     return self
 end
 
@@ -112,6 +117,13 @@ function Text:update()
     end
 end
 
+setmetatable(Text, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically update when any property changes
+    end
+})
+
 ------------------------------------------------
 -- Circle class (inherits from DrawingObject)
 ------------------------------------------------
@@ -125,9 +137,10 @@ function Circle.new()
     self.frame = Instance.new("Frame")
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White for visibility
     self.frame.Parent = self.screenGui
 
-    -- Add UICorner to round the frame
+    -- Add UICorner to round the frame (to make it a circle)
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
@@ -138,24 +151,32 @@ function Circle.new()
     self.Filled = true
     self.Position = Vector2.new(200, 200)
 
-    self:update()
     return self
 end
 
 function Circle:update()
+    -- Update the size and position of the circle
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     self.frame.BackgroundTransparency = self.Transparency
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
 
-    if not self.Filled then
-        self.frame.BackgroundTransparency = 1
-        self.frame.BorderSizePixel = self.Thickness
-        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    -- Handle outline or filled state
+    if self.Filled then
+        self.frame.BackgroundTransparency = self.Transparency
+        self.frame.BorderSizePixel = 0  -- No border when filled
     else
-        self.frame.BorderSizePixel = 0
+        self.frame.BackgroundTransparency = 1  -- No background
+        self.frame.BorderSizePixel = self.Thickness  -- Use thickness as border
+        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)  -- White border by default
     end
 end
+
+setmetatable(Circle, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically update when any property changes
+    end
+})
 
 ------------------------------------------------
 -- CustomDrawing creation logic
