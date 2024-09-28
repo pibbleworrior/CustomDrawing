@@ -1,112 +1,88 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
--- Helper function to find or create the ScreenGui in CoreGui
+-- Function to create or get an existing ScreenGui in CoreGui
 local function getOrCreateScreenGui()
     local CoreGui = game:GetService("CoreGui")
-
-    -- Check if the ScreenGui already exists
     local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
+    
     if existingGui then
-        return existingGui -- Reuse the existing ScreenGui
+        return existingGui -- Reuse existing ScreenGui
+    else
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "CustomDrawingGui"
+        screenGui.Parent = CoreGui
+        return screenGui
     end
-
-    -- Create a new ScreenGui and ensure it is created successfully
-    local screenGui = Instance.new("ScreenGui")
-    if not screenGui then
-        warn("Failed to create ScreenGui")
-        return nil -- Return nil if ScreenGui couldn't be created
-    end
-
-    screenGui.Name = "CustomDrawingGui"
-    screenGui.Parent = CoreGui
-    return screenGui
 end
 
--- CustomDrawing.new("Line")
+-- CustomDrawing.new("Line") to create a new line
 function CustomDrawing.new(type)
+    local self = setmetatable({}, CustomDrawing)
+    
+    -- Create or reuse a ScreenGui
+    self.screenGui = getOrCreateScreenGui()
+    
+    -- Create a frame to represent the line
     if type == "Line" then
-        local self = setmetatable({}, CustomDrawing)
-
-        -- Get or create the ScreenGui in CoreGui
-        self.screenGui = getOrCreateScreenGui()
-
-        -- Ensure the ScreenGui is created successfully
-        if not self.screenGui then
-            error("Failed to get or create ScreenGui")
-        end
-
-        -- Create the Frame to represent the line
-        self.lineFrame = Instance.new("Frame")
-        self.lineFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-        self.lineFrame.BorderSizePixel = 0
-        self.lineFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color for visibility
-        self.lineFrame.Parent = self.screenGui
+        self.frame = Instance.new("Frame")
+        self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+        self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility
+        self.frame.BorderSizePixel = 0  -- No border
+        self.frame.Parent = self.screenGui
 
         -- Initialize default properties
-        self.Transparency = 0 -- Default fully opaque
-        self.Thickness = 1 -- Default smallest thickness
-        self.From = Vector2.new(0, 0) -- Default start point
-        self.To = Vector2.new(100, 100) -- Default end point
-
-        -- Draw the line based on the initial properties
+        self.Thickness = 1
+        self.Transparency = 0
+        self.From = Vector2.new(0, 0)
+        self.To = Vector2.new(100, 100)
+        
         self:updateLine()
-
-        return self
     else
         error("Unsupported drawing type: " .. tostring(type))
     end
+    
+    return self
 end
 
--- Update the line based on its properties
+-- Function to update the line's visual properties
 function CustomDrawing:updateLine()
-    -- Ensure that From and To are valid
-    if not self.From or not self.To then
-        warn("From or To is nil, skipping update.")
-        return
-    end
-
-    -- Calculate the difference in X and Y coordinates
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
-
-    -- Update size, position, transparency, and rotation
-    self.lineFrame.Size = UDim2.new(0, distance, 0, self.Thickness)
-    self.lineFrame.Position = UDim2.new(0, (self.From.X + self.To.X) / 2, 0, (self.From.Y + self.To.Y) / 2)
-    self.lineFrame.Rotation = math.deg(math.atan2(deltaY, deltaX))
-    self.lineFrame.BackgroundTransparency = self.Transparency
+    
+    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
+    self.frame.Position = UDim2.new(0, (self.From.X + self.To.X) / 2, 0, (self.From.Y + self.To.Y) / 2)
+    self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
+    self.frame.BackgroundTransparency = self.Transparency
 end
 
--- Custom metatable to update properties dynamically when assigned
-setmetatable(CustomDrawing, {
-    __newindex = function(t, key, value)
-        if key == "Transparency" then
-            rawset(t, key, value)
-            t:updateLine() -- Update when Transparency changes
-        elseif key == "Thickness" then
-            rawset(t, key, value)
-            t:updateLine() -- Update when Thickness changes
-        elseif key == "From" then
-            -- Ensure 'From' is a valid Vector2
-            if typeof(value) == "Vector2" then
-                rawset(t, key, value)
-                t:updateLine() -- Update when From changes
-            else
-                warn("Invalid value for 'From', must be Vector2")
-            end
-        elseif key == "To" then
-            -- Ensure 'To' is a valid Vector2
-            if typeof(value) == "Vector2" then
-                rawset(t, key, value)
-                t:updateLine() -- Update when To changes
-            else
-                warn("Invalid value for 'To', must be Vector2")
-            end
-        else
-            rawset(t, key, value) -- Handle other properties
-        end
+-- Setters to dynamically update properties
+function CustomDrawing:setFrom(point)
+    self.From = point
+    self:updateLine()
+end
+
+function CustomDrawing:setTo(point)
+    self.To = point
+    self:updateLine()
+end
+
+function CustomDrawing:setThickness(value)
+    self.Thickness = value
+    self:updateLine()
+end
+
+function CustomDrawing:setTransparency(value)
+    self.Transparency = value
+    self:updateLine()
+end
+
+-- Function to destroy the drawing
+function CustomDrawing:destroy()
+    if self.frame then
+        self.frame:Destroy()
     end
-})
+end
 
 return CustomDrawing
