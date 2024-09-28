@@ -17,8 +17,8 @@ local function getOrCreateScreenGui()
     end
 end
 
--- CustomDrawing.new("Line", {Transparency = 0.5, Thickness = 3, From = Vector2.new(100, 100), To = Vector2.new(400, 300)})
-function CustomDrawing.new(type, options)
+-- CustomDrawing.new("Line")
+function CustomDrawing.new(type)
     if type == "Line" then
         local self = setmetatable({}, CustomDrawing)
 
@@ -32,11 +32,11 @@ function CustomDrawing.new(type, options)
         self.lineFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility (can be changed)
         self.lineFrame.Parent = self.screenGui
 
-        -- Initialize properties with defaults if not provided
-        self.Transparency = options.Transparency or 0  -- Default 0 (fully opaque)
-        self.Thickness = options.Thickness or 1        -- Default 1 (smallest thickness)
-        self.From = options.From or Vector2.new(0, 0) -- Default starting point (top-left)
-        self.To = options.To or Vector2.new(100, 100) -- Default ending point
+        -- Initialize default properties
+        self.Transparency = 0  -- Default fully opaque
+        self.Thickness = 1     -- Default smallest thickness
+        self.From = Vector2.new(0, 0) -- Default start point
+        self.To = Vector2.new(100, 100) -- Default end point
 
         -- Draw the line based on the initial properties
         self:updateLine()
@@ -67,33 +67,35 @@ function CustomDrawing:updateLine()
     self.lineFrame.BackgroundTransparency = self.Transparency
 end
 
--- Custom setters for dynamic property updates
-function CustomDrawing:setTransparency(value)
-    self.Transparency = value
-    self:updateLine() -- Immediately update the line when Transparency is changed
-end
-
-function CustomDrawing:setThickness(value)
-    self.Thickness = value
-    self:updateLine() -- Immediately update the line when Thickness is changed
-end
-
-function CustomDrawing:setFrom(value)
-    if typeof(value) == "Vector2" then
-        self.From = value
-        self:updateLine() -- Immediately update the line when From is changed
-    else
-        warn("Invalid value for 'From', must be Vector2")
+-- Custom metatable to update properties dynamically when assigned
+setmetatable(CustomDrawing, {
+    __newindex = function(t, key, value)
+        if key == "Transparency" then
+            rawset(t, key, value)
+            t:updateLine() -- Update when Transparency changes
+        elseif key == "Thickness" then
+            rawset(t, key, value)
+            t:updateLine() -- Update when Thickness changes
+        elseif key == "From" then
+            -- Ensure 'From' is a valid Vector2
+            if typeof(value) == "Vector2" then
+                rawset(t, key, value)
+                t:updateLine() -- Update when From changes
+            else
+                warn("Invalid value for 'From', must be Vector2")
+            end
+        elseif key == "To" then
+            -- Ensure 'To' is a valid Vector2
+            if typeof(value) == "Vector2" then
+                rawset(t, key, value)
+                t:updateLine() -- Update when To changes
+            else
+                warn("Invalid value for 'To', must be Vector2")
+            end
+        else
+            rawset(t, key, value) -- Handle other properties
+        end
     end
-end
-
-function CustomDrawing:setTo(value)
-    if typeof(value) == "Vector2" then
-        self.To = value
-        self:updateLine() -- Immediately update the line when To is changed
-    else
-        warn("Invalid value for 'To', must be Vector2")
-    end
-end
+})
 
 return CustomDrawing
