@@ -3,8 +3,8 @@ CustomDrawing.__index = CustomDrawing
 
 local RunService = game:GetService("RunService")
 
--- Frame counter to track updates
-local frameCounter = 0
+-- Minimum time interval between updates (in seconds)
+local MIN_UPDATE_INTERVAL = 0.05 -- 50 milliseconds
 
 -- Helper function to get or create a ScreenGui in CoreGui
 local function getOrCreateScreenGui()
@@ -21,7 +21,7 @@ local function getOrCreateScreenGui()
     end
 end
 
--- CustomDrawing.new("Line") to create a new line
+-- CustomDrawing.new("Line")
 function CustomDrawing.new(type)
     local self = setmetatable({}, CustomDrawing)
 
@@ -35,9 +35,11 @@ function CustomDrawing.new(type)
         self.frame.BorderSizePixel = 0  -- No border
         self.frame.Parent = self.screenGui
 
-        -- Initialize variables for throttling updates
+        -- Variables for throttling and debouncing
         self.isUpdated = false
         self.lastUpdateTime = 0  -- Keeps track of the last update time
+        self.debounceTime = 0     -- Time to debounce rapid updates
+        self.needsUpdate = false  -- Whether an update is pending
 
         return self
     else
@@ -45,13 +47,19 @@ function CustomDrawing.new(type)
     end
 end
 
--- Function to update the line's visual properties every second frame
+-- Function to actually update the line's visual properties (throttled and debounced)
 function CustomDrawing:updateLine()
-    -- Only update every second frame
-    frameCounter = frameCounter + 1
-    if frameCounter % 2 ~= 0 then
-        return  -- Skip updating on odd frames
+    local currentTime = tick()
+
+    -- Throttle updates to only happen after the minimum interval
+    if currentTime - self.lastUpdateTime < MIN_UPDATE_INTERVAL then
+        -- If it's too soon to update, mark as needing an update and debounce it
+        self.needsUpdate = true
+        return
     end
+
+    -- Reset debounce flag
+    self.needsUpdate = false
 
     -- Ensure that From and To are valid
     if not self.From or not self.To then
@@ -74,11 +82,21 @@ function CustomDrawing:updateLine()
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency
 
+    -- Update the last update time
+    self.lastUpdateTime = currentTime
+
     -- Reset update flag after drawing
     self.isUpdated = false
 end
 
--- Setters to dynamically update properties (only trigger update if the value changes)
+-- Debounce handling for pending updates
+function CustomDrawing:processPendingUpdates()
+    if self.needsUpdate then
+        self:updateLine()
+    end
+end
+
+-- Setters to dynamically update properties (debounced to handle rapid changes)
 function CustomDrawing:setFrom(point)
     if self.From ~= point then
         self.From = point
@@ -117,5 +135,11 @@ function CustomDrawing:destroy()
         self.frame:Destroy()
     end
 end
+
+-- Connect to RunService.Heartbeat to handle debouncing
+RunService.Heartbeat:Connect(function()
+    -- Check for any pending updates that need to be processed
+    CustomDrawing:processPendingUpdates()
+end)
 
 return CustomDrawing
