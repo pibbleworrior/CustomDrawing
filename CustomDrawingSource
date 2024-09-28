@@ -39,20 +39,20 @@ function Line.new()
     self.frame = Instance.new("Frame")
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
-    -- No default properties. You must set all fields.
+    -- No default properties, everything is set dynamically by the user script
     self.Thickness = nil
     self.Transparency = nil
     self.From = nil
     self.To = nil
+    self.Color = nil -- No default color
 
     return self
 end
 
 function Line:update()
-    if not self.From or not self.To or not self.Thickness then return end -- Don't update unless necessary fields are set
+    if not self.From or not self.To or not self.Thickness or not self.Color then return end -- Don't update unless necessary fields are set
 
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
@@ -65,6 +65,7 @@ function Line:update()
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency or 0
+    self.frame.BackgroundColor3 = self.Color -- Must be set explicitly
 end
 
 setmetatable(Line, {
@@ -88,7 +89,7 @@ function Text.new()
     self.label.BackgroundTransparency = 1 -- No background
     self.label.Parent = self.screenGui
 
-    -- No default properties. You must set all fields.
+    -- No default properties, everything is set dynamically by the user script
     self.Text = nil
     self.Size = nil
     self.Transparency = nil
@@ -108,7 +109,7 @@ function Text:update()
     self.label.Font = self.Font or Enum.Font.SourceSans
     self.label.TextSize = self.Size
     self.label.TextTransparency = self.Transparency or 0
-    self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.label.TextColor3 = self.TextColor -- Must be set explicitly
     self.label.TextStrokeTransparency = self.Outline and 0 or 1
     self.label.TextStrokeColor3 = self.OutlineColor or Color3.new(0, 0, 0)
 
@@ -145,28 +146,29 @@ function Circle.new()
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
-    -- No default properties. You must set all fields.
+    -- No default properties, everything is set dynamically by the user script
     self.Transparency = nil
     self.Thickness = nil
     self.Radius = nil
     self.Filled = nil
     self.Position = nil
+    self.Color = nil -- No default color
 
     return self
 end
 
 function Circle:update()
-    if not self.Radius or not self.Position then return end -- Don't update unless necessary fields are set
+    if not self.Radius or not self.Position or not self.Color then return end -- Don't update unless necessary fields are set
 
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     self.frame.BackgroundTransparency = self.Transparency or 0
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    self.frame.BackgroundColor3 = self.Color -- Must be set explicitly
 
     if not self.Filled then
         self.frame.BackgroundTransparency = 1
         self.frame.BorderSizePixel = self.Thickness or 1
-        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+        self.frame.BorderColor3 = self.Color
     else
         self.frame.BorderSizePixel = 0
     end
