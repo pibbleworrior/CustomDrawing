@@ -198,7 +198,7 @@ function CustomDrawing.new(drawType)
     elseif drawType == "Circle" then
         return Circle.new()
     else
-        error("Invalid draw type: " .. tostring(drawType))
+        error("Invalid draw type: " .. tostring(drawType)) -- Ensure valid draw types
     end
 end
 
