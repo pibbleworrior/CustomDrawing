@@ -67,12 +67,130 @@ function Line:update()
     self.frame.BackgroundTransparency = self.Transparency
 end
 
+setmetatable(Line, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically update when any property changes
+    end
+})
+
+------------------------------------------------
+-- Text class (inherits from DrawingObject)
+------------------------------------------------
+local Text = {}
+Text.__index = Text
+
+function Text.new()
+    local self = setmetatable(DrawingObject.new(), Text)
+
+    -- Create the text label
+    self.label = Instance.new("TextLabel")
+    self.label.BackgroundTransparency = 1  -- No background
+    self.label.TextStrokeTransparency = 1  -- Outline initially disabled
+    self.label.Parent = self.screenGui
+
+    -- Default properties
+    self.Text = "Sample Text"
+    self.Size = 24
+    self.Transparency = 0
+    self.Center = false
+    self.Outline = false
+    self.OutlineColor = Color3.new(0, 0, 0)
+    self.Position = Vector2.new(100, 100)
+    self.Font = Enum.Font.SourceSans
+
+    -- Manually update after creation
+    self:update()
+    return self
+end
+
+function Text:update()
+    self.label.Text = self.Text
+    self.label.Font = self.Font
+    self.label.TextSize = self.Size
+    self.label.TextTransparency = self.Transparency
+    self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.label.TextStrokeTransparency = self.Outline and 0 or 1
+    self.label.TextStrokeColor3 = self.OutlineColor
+    self.label.Size = UDim2.new(0, self.label.TextBounds.X, 0, self.label.TextBounds.Y)
+
+    if self.Center then
+        self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
+    else
+        self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    end
+end
+
+setmetatable(Text, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically update when any property changes
+    end
+})
+
+------------------------------------------------
+-- Circle class (inherits from DrawingObject)
+------------------------------------------------
+local Circle = {}
+Circle.__index = Circle
+
+function Circle.new()
+    local self = setmetatable(DrawingObject.new(), Circle)
+
+    -- Create a Frame to simulate the circle using UICorner
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0
+    self.frame.Parent = self.screenGui
+
+    -- Add UICorner to round the frame
+    local corner = Instance.new("UICorner", self.frame)
+    corner.CornerRadius = UDim.new(1, 0)
+
+    -- Default properties
+    self.Transparency = 0
+    self.Thickness = 1
+    self.Radius = 50
+    self.Filled = true
+    self.Position = Vector2.new(200, 200)
+
+    -- Manually update after creation
+    self:update()
+    return self
+end
+
+function Circle:update()
+    self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
+    self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    self.frame.BackgroundTransparency = self.Transparency
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
+
+    if not self.Filled then
+        self.frame.BackgroundTransparency = 1
+        self.frame.BorderSizePixel = self.Thickness
+        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        self.frame.BorderSizePixel = 0
+    end
+end
+
+setmetatable(Circle, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically update when any property changes
+    end
+})
+
 ------------------------------------------------
 -- CustomDrawing creation logic
 ------------------------------------------------
 function CustomDrawing.new(drawType)
     if drawType == "Line" then
         return Line.new()
+    elseif drawType == "Text" then
+        return Text.new()
+    elseif drawType == "Circle" then
+        return Circle.new()
     else
         error("Invalid draw type: " .. tostring(drawType))
     end
