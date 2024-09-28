@@ -11,6 +11,7 @@ local function getOrCreateScreenGui()
     else
         local screenGui = Instance.new("ScreenGui")
         screenGui.Name = "CustomDrawingGui"
+        screenGui.ResetOnSpawn = false -- Ensure the ScreenGui doesn't reset
         screenGui.Parent = CoreGui
         return screenGui
     end
@@ -46,13 +47,13 @@ function Line.new()
     self.Transparency = nil
     self.From = nil
     self.To = nil
-    self.Color = nil -- No default color
+    self.Color = nil
 
     return self
 end
 
 function Line:update()
-    if not self.From or not self.To or not self.Thickness or not self.Color then return end -- Don't update unless necessary fields are set
+    if not self.From or not self.To or not self.Thickness or not self.Color then return end
 
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
@@ -98,18 +99,19 @@ function Text.new()
     self.OutlineColor = nil
     self.Position = nil
     self.Font = nil
+    self.TextColor = nil -- Explicit color setting required
 
     return self
 end
 
 function Text:update()
-    if not self.Text or not self.Size or not self.Position then return end -- Don't update unless necessary fields are set
+    if not self.Text or not self.Size or not self.Position or not self.TextColor then return end -- Ensure necessary fields are set
 
     self.label.Text = self.Text
     self.label.Font = self.Font or Enum.Font.SourceSans
     self.label.TextSize = self.Size
     self.label.TextTransparency = self.Transparency or 0
-    self.label.TextColor3 = self.TextColor -- Must be set explicitly
+    self.label.TextColor3 = self.TextColor -- Explicit color
     self.label.TextStrokeTransparency = self.Outline and 0 or 1
     self.label.TextStrokeColor3 = self.OutlineColor or Color3.new(0, 0, 0)
 
@@ -152,18 +154,18 @@ function Circle.new()
     self.Radius = nil
     self.Filled = nil
     self.Position = nil
-    self.Color = nil -- No default color
+    self.Color = nil -- Explicit color setting required
 
     return self
 end
 
 function Circle:update()
-    if not self.Radius or not self.Position or not self.Color then return end -- Don't update unless necessary fields are set
+    if not self.Radius or not self.Position or not self.Color then return end
 
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     self.frame.BackgroundTransparency = self.Transparency or 0
-    self.frame.BackgroundColor3 = self.Color -- Must be set explicitly
+    self.frame.BackgroundColor3 = self.Color
 
     if not self.Filled then
         self.frame.BackgroundTransparency = 1
