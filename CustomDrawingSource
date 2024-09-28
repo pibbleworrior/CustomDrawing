@@ -65,6 +65,9 @@ function Line:update()
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency or 0
+
+    -- Ensure the line is always visible
+    self.frame.Visible = true
 end
 
 setmetatable(Line, {
@@ -117,6 +120,9 @@ function Text:update()
     else
         self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     end
+
+    -- Ensure the text is always visible
+    self.label.Visible = true
 end
 
 setmetatable(Text, {
@@ -170,6 +176,9 @@ function Circle:update()
     else
         self.frame.BorderSizePixel = 0
     end
+
+    -- Ensure the circle is always visible
+    self.frame.Visible = true
 end
 
 setmetatable(Circle, {
