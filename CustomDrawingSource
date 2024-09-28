@@ -42,17 +42,13 @@ function Line.new()
     self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
-    -- Initialize properties
-    self.Thickness = nil
-    self.Transparency = nil
-    self.From = nil
-    self.To = nil
-
     return self
 end
 
 function Line:update()
-    if not self.From or not self.To then return end
+    if not self.From or not self.To or not self.Thickness then
+        return -- Don't update until all necessary fields are set
+    end
 
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
@@ -61,7 +57,7 @@ function Line:update()
     local midX = (self.From.X + self.To.X) / 2
     local midY = (self.From.Y + self.To.Y) / 2
 
-    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness or 1)
+    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency or 0
@@ -89,21 +85,13 @@ function Text.new()
     self.label.TextStrokeTransparency = 1  -- Outline initially disabled
     self.label.Parent = self.screenGui
 
-    -- Initialize properties
-    self.Text = nil
-    self.Size = nil
-    self.Transparency = nil
-    self.Center = nil
-    self.Outline = nil
-    self.OutlineColor = nil
-    self.Position = nil
-    self.Font = nil
-
     return self
 end
 
 function Text:update()
-    if not self.Text or not self.Size or not self.Position then return end
+    if not self.Text or not self.Size or not self.Position then
+        return -- Don't update until necessary fields are set
+    end
 
     self.label.Text = self.Text
     self.label.Font = self.Font or Enum.Font.SourceSans
@@ -147,18 +135,13 @@ function Circle.new()
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
-    -- Initialize properties
-    self.Transparency = nil
-    self.Thickness = nil
-    self.Radius = nil
-    self.Filled = nil
-    self.Position = nil
-
     return self
 end
 
 function Circle:update()
-    if not self.Radius or not self.Position then return end
+    if not self.Radius or not self.Position or not self.Thickness then
+        return -- Don't update until all necessary fields are set
+    end
 
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
@@ -167,7 +150,7 @@ function Circle:update()
 
     if not self.Filled then
         self.frame.BackgroundTransparency = 1
-        self.frame.BorderSizePixel = self.Thickness or 1
+        self.frame.BorderSizePixel = self.Thickness
         self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
     else
         self.frame.BorderSizePixel = 0
