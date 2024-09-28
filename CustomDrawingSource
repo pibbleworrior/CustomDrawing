@@ -1,7 +1,12 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
--- Helper function to create or get an existing ScreenGui in CoreGui
+local RunService = game:GetService("RunService")
+
+-- Frame counter to track updates
+local frameCounter = 0
+
+-- Helper function to get or create a ScreenGui in CoreGui
 local function getOrCreateScreenGui()
     local CoreGui = game:GetService("CoreGui")
     local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
@@ -16,7 +21,7 @@ local function getOrCreateScreenGui()
     end
 end
 
--- CustomDrawing.new("Line")
+-- CustomDrawing.new("Line") to create a new line
 function CustomDrawing.new(type)
     local self = setmetatable({}, CustomDrawing)
 
@@ -30,9 +35,9 @@ function CustomDrawing.new(type)
         self.frame.BorderSizePixel = 0  -- No border
         self.frame.Parent = self.screenGui
 
-        -- No default properties; the user will have to set them
-
-        self.isUpdated = false  -- Used to track when updates are needed
+        -- Initialize variables for throttling updates
+        self.isUpdated = false
+        self.lastUpdateTime = 0  -- Keeps track of the last update time
 
         return self
     else
@@ -40,9 +45,13 @@ function CustomDrawing.new(type)
     end
 end
 
--- Function to update the line's visual properties if changes have occurred
+-- Function to update the line's visual properties every second frame
 function CustomDrawing:updateLine()
-    if not self.isUpdated then return end  -- If there's nothing to update, skip
+    -- Only update every second frame
+    frameCounter = frameCounter + 1
+    if frameCounter % 2 ~= 0 then
+        return  -- Skip updating on odd frames
+    end
 
     -- Ensure that From and To are valid
     if not self.From or not self.To then
