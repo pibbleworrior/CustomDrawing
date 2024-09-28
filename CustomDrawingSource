@@ -1,0 +1,71 @@
+local CustomDrawing = {}
+CustomDrawing.__index = CustomDrawing
+
+-- CustomDrawing.new("Line", {Transparency = 0.5, Thickness = 3, From = Vector2.new(100, 100), To = Vector2.new(400, 300)})
+function CustomDrawing.new(type, options)
+    if type == "Line" then
+        local self = setmetatable({}, CustomDrawing)
+
+        -- Create the ScreenGui in CoreGui
+        local CoreGui = game:GetService("CoreGui")
+        self.screenGui = Instance.new("ScreenGui")
+        self.screenGui.Name = "CustomDrawingGui"
+        self.screenGui.Parent = CoreGui  -- Parent it to CoreGui
+        
+        -- Create the Frame to represent the line
+        self.lineFrame = Instance.new("Frame")
+        self.lineFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        self.lineFrame.BorderSizePixel = 0
+        self.lineFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility (can be changed)
+        self.lineFrame.Parent = self.screenGui
+        
+        -- Apply default or user-supplied properties
+        self.Transparency = options.Transparency or 0  -- Default 0 (fully opaque)
+        self.Thickness = options.Thickness or 1        -- Default 1 (smallest thickness)
+        self.From = options.From or Vector2.new(0, 0) -- Default starting point (top-left)
+        self.To = options.To or Vector2.new(100, 100) -- Default ending point
+
+        -- Draw the line based on the initial properties
+        self:updateLine()
+
+        return self
+    else
+        error("Unsupported drawing type: " .. tostring(type))
+    end
+end
+
+-- Update the line based on its properties
+function CustomDrawing:updateLine()
+    local deltaX = self.To.X - self.From.X
+    local deltaY = self.To.Y - self.From.Y
+    local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+    -- Update size, position, transparency, and rotation
+    self.lineFrame.Size = UDim2.new(0, distance, 0, self.Thickness)
+    self.lineFrame.Position = UDim2.new(0, (self.From.X + self.To.X) / 2, 0, (self.From.Y + self.To.Y) / 2)
+    self.lineFrame.Rotation = math.deg(math.atan2(deltaY, deltaX))
+    self.lineFrame.BackgroundTransparency = self.Transparency
+end
+
+-- Custom setters
+function CustomDrawing:setTransparency(value)
+    self.Transparency = value
+    self:updateLine()
+end
+
+function CustomDrawing:setThickness(value)
+    self.Thickness = value
+    self:updateLine()
+end
+
+function CustomDrawing:setFrom(position)
+    self.From = position
+    self:updateLine()
+end
+
+function CustomDrawing:setTo(position)
+    self.To = position
+    self:updateLine()
+end
+
+return CustomDrawing
