@@ -32,7 +32,7 @@ end
 local Line = {}
 Line.__index = Line
 
-function Line.new()
+function Line.new(fields)
     local self = setmetatable(DrawingObject.new(), Line)
 
     -- Create the frame for the line
@@ -42,12 +42,13 @@ function Line.new()
     self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
-    -- Default properties for the line
-    self.Thickness = 1
-    self.Transparency = 0
-    self.From = Vector2.new(0, 0)
-    self.To = Vector2.new(100, 100)
+    -- Set properties from fields (if provided)
+    self.Thickness = fields.Thickness or 1
+    self.Transparency = fields.Transparency or 0
+    self.From = fields.From or Vector2.new(0, 0)
+    self.To = fields.To or Vector2.new(100, 100)
 
+    -- Update the line
     self:update()
     return self
 end
@@ -79,7 +80,7 @@ setmetatable(Line, {
 local Text = {}
 Text.__index = Text
 
-function Text.new()
+function Text.new(fields)
     local self = setmetatable(DrawingObject.new(), Text)
 
     -- Create the text label
@@ -88,16 +89,17 @@ function Text.new()
     self.label.TextStrokeTransparency = 1  -- Outline initially disabled
     self.label.Parent = self.screenGui
 
-    -- Default properties
-    self.Text = "Sample Text"
-    self.Size = 24
-    self.Transparency = 0
-    self.Center = false
-    self.Outline = false
-    self.OutlineColor = Color3.new(0, 0, 0)
-    self.Position = Vector2.new(100, 100)
-    self.Font = Enum.Font.SourceSans
+    -- Set properties from fields (if provided)
+    self.Text = fields.Text or "Sample Text"
+    self.Size = fields.Size or 24
+    self.Transparency = fields.Transparency or 0
+    self.Center = fields.Center or false
+    self.Outline = fields.Outline or false
+    self.OutlineColor = fields.OutlineColor or Color3.new(0, 0, 0)
+    self.Position = fields.Position or Vector2.new(100, 100)
+    self.Font = fields.Font or Enum.Font.SourceSans
 
+    -- Update the text
     self:update()
     return self
 end
@@ -132,7 +134,7 @@ setmetatable(Text, {
 local Circle = {}
 Circle.__index = Circle
 
-function Circle.new()
+function Circle.new(fields)
     local self = setmetatable(DrawingObject.new(), Circle)
 
     -- Create a Frame to simulate the circle using UICorner
@@ -145,13 +147,14 @@ function Circle.new()
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
-    -- Default properties
-    self.Transparency = 0
-    self.Thickness = 1
-    self.Radius = 50
-    self.Filled = true
-    self.Position = Vector2.new(200, 200)
+    -- Set properties from fields (if provided)
+    self.Transparency = fields.Transparency or 0
+    self.Thickness = fields.Thickness or 1
+    self.Radius = fields.Radius or 50
+    self.Filled = fields.Filled or true
+    self.Position = fields.Position or Vector2.new(200, 200)
 
+    -- Update the circle
     self:update()
     return self
 end
@@ -181,13 +184,13 @@ setmetatable(Circle, {
 ------------------------------------------------
 -- CustomDrawing creation logic
 ------------------------------------------------
-function CustomDrawing.new(drawType)
+function CustomDrawing.new(drawType, fields)
     if drawType == "Line" then
-        return Line.new()
+        return Line.new(fields or {})
     elseif drawType == "Text" then
-        return Text.new()
+        return Text.new(fields or {})
     elseif drawType == "Circle" then
-        return Circle.new()
+        return Circle.new(fields or {})
     else
         error("Invalid draw type: " .. tostring(drawType))
     end
