@@ -42,7 +42,7 @@ function Line.new()
     self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
-    -- No default properties. Everything is set by the user.
+    -- No default properties. The user must set all fields.
     self.Thickness = nil
     self.Transparency = nil
     self.From = nil
@@ -52,7 +52,8 @@ function Line.new()
 end
 
 function Line:update()
-    if not self.From or not self.To then return end  -- Don't update if From and To aren't set
+    if not self.From or not self.To or not self.Thickness then return end  -- Don't update if fields are missing
+
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
@@ -60,7 +61,7 @@ function Line:update()
     local midX = (self.From.X + self.To.X) / 2
     local midY = (self.From.Y + self.To.Y) / 2
 
-    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness or 1)
+    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency or 0
@@ -69,7 +70,7 @@ end
 setmetatable(Line, {
     __newindex = function(self, key, value)
         rawset(self, key, value)  -- Set the new value
-        self:update()  -- Automatically update when a field changes
+        self:update()  -- Automatically update the line whenever a field changes
     end
 })
 
@@ -102,13 +103,14 @@ end
 
 function Text:update()
     if not self.Text or not self.Size or not self.Position then return end  -- Don't update unless necessary fields are set
+
     self.label.Text = self.Text
-    self.label.Font = self.Font or Enum.Font.SourceSans
+    self.label.Font = self.Font
     self.label.TextSize = self.Size
     self.label.TextTransparency = self.Transparency or 0
     self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
     self.label.TextStrokeTransparency = self.Outline and 0 or 1
-    self.label.TextStrokeColor3 = self.OutlineColor or Color3.new(0, 0, 0)
+    self.label.TextStrokeColor3 = self.OutlineColor
 
     if self.Center then
         self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
@@ -155,10 +157,11 @@ end
 
 function Circle:update()
     if not self.Radius or not self.Position then return end  -- Don't update unless necessary fields are set
+
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     self.frame.BackgroundTransparency = self.Transparency or 0
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 
     if not self.Filled then
         self.frame.BackgroundTransparency = 1
