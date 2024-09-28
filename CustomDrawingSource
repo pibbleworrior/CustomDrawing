@@ -38,6 +38,7 @@ function Line.new()
 
     -- Create the frame for the line
     self.frame = Instance.new("Frame")
+    self.frame.Name = "LineFrame" -- Assign a unique name for identification
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
     self.frame.Parent = self.screenGui
@@ -87,6 +88,7 @@ function Text.new()
 
     -- Create the text label
     self.label = Instance.new("TextLabel")
+    self.label.Name = "TextLabel" -- Assign a unique name
     self.label.BackgroundTransparency = 1 -- No background
     self.label.Parent = self.screenGui
 
@@ -140,6 +142,7 @@ function Circle.new()
 
     -- Create a Frame to simulate the circle using UICorner
     self.frame = Instance.new("Frame")
+    self.frame.Name = "CircleFrame" -- Assign a unique name
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
     self.frame.Parent = self.screenGui
