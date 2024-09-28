@@ -1,7 +1,7 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
--- Helper function to find or create a ScreenGui in CoreGui
+-- Helper function to create or get an existing ScreenGui in CoreGui
 local function getOrCreateScreenGui()
     local CoreGui = game:GetService("CoreGui")
     local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
@@ -16,7 +16,7 @@ local function getOrCreateScreenGui()
     end
 end
 
--- CustomDrawing.new("Line") to create a new line
+-- CustomDrawing.new("Line")
 function CustomDrawing.new(type)
     local self = setmetatable({}, CustomDrawing)
 
@@ -27,26 +27,23 @@ function CustomDrawing.new(type)
     if type == "Line" then
         self.frame = Instance.new("Frame")
         self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-        self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility
         self.frame.BorderSizePixel = 0  -- No border
         self.frame.Parent = self.screenGui
 
-        -- Initialize default properties
-        self.Thickness = 1
-        self.Transparency = 0
-        self.From = Vector2.new(0, 0)
-        self.To = Vector2.new(100, 100)
-        
-        self:updateLine()
+        -- No default properties; the user will have to set them
+
+        self.isUpdated = false  -- Used to track when updates are needed
+
+        return self
     else
         error("Unsupported drawing type: " .. tostring(type))
     end
-    
-    return self
 end
 
--- Function to update the line's visual properties
+-- Function to update the line's visual properties if changes have occurred
 function CustomDrawing:updateLine()
+    if not self.isUpdated then return end  -- If there's nothing to update, skip
+
     -- Ensure that From and To are valid
     if not self.From or not self.To then
         warn("From or To is nil, skipping update.")
@@ -67,27 +64,42 @@ function CustomDrawing:updateLine()
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency
+
+    -- Reset update flag after drawing
+    self.isUpdated = false
 end
 
--- Setters to dynamically update properties
+-- Setters to dynamically update properties (only trigger update if the value changes)
 function CustomDrawing:setFrom(point)
-    self.From = point
-    self:updateLine()
+    if self.From ~= point then
+        self.From = point
+        self.isUpdated = true
+        self:updateLine()
+    end
 end
 
 function CustomDrawing:setTo(point)
-    self.To = point
-    self:updateLine()
+    if self.To ~= point then
+        self.To = point
+        self.isUpdated = true
+        self:updateLine()
+    end
 end
 
 function CustomDrawing:setThickness(value)
-    self.Thickness = value
-    self:updateLine()
+    if self.Thickness ~= value then
+        self.Thickness = value
+        self.isUpdated = true
+        self:updateLine()
+    end
 end
 
 function CustomDrawing:setTransparency(value)
-    self.Transparency = value
-    self:updateLine()
+    if self.Transparency ~= value then
+        self.Transparency = value
+        self.isUpdated = true
+        self:updateLine()
+    end
 end
 
 -- Function to destroy the drawing
