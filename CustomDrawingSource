@@ -54,6 +54,8 @@ function Line.new()
 end
 
 function Line:update()
+    if not self.From or not self.To then return end  -- Ensure the fields are set before updating
+
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
@@ -69,8 +71,8 @@ end
 
 setmetatable(Line, {
     __newindex = function(self, key, value)
-        rawset(self, key, value)
-        self:update() -- Automatically update when any property changes
+        rawset(self, key, value)  -- Set the new value
+        self:update()  -- Automatically update the line whenever a field changes
     end
 })
 
@@ -105,6 +107,8 @@ function Text.new()
 end
 
 function Text:update()
+    if not self.Text or not self.Size or not self.Position then return end  -- Ensure necessary fields are set
+
     self.label.Text = self.Text
     self.label.Font = self.Font
     self.label.TextSize = self.Size
@@ -123,8 +127,8 @@ end
 
 setmetatable(Text, {
     __newindex = function(self, key, value)
-        rawset(self, key, value)
-        self:update() -- Automatically update when any property changes
+        rawset(self, key, value)  -- Set the new value
+        self:update()  -- Automatically update the text whenever a field changes
     end
 })
 
@@ -160,6 +164,8 @@ function Circle.new()
 end
 
 function Circle:update()
+    if not self.Radius or not self.Position then return end  -- Ensure necessary fields are set
+
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     self.frame.BackgroundTransparency = self.Transparency
@@ -176,8 +182,8 @@ end
 
 setmetatable(Circle, {
     __newindex = function(self, key, value)
-        rawset(self, key, value)
-        self:update() -- Automatically update when any property changes
+        rawset(self, key, value)  -- Set the new value
+        self:update()  -- Automatically update the circle whenever a field changes
     end
 })
 
