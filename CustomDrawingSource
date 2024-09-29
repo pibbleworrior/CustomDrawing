@@ -1,100 +1,174 @@
--- CustomDrawing Module
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
--- The available types for drawing (we can add more later)
-local drawingTypes = {
-    ["Line"] = true,
-}
-
--- Function to create or use an existing CustomDrawingGui in CoreGui
-local function getOrCreateCustomDrawingGui()
-    local coreGui = game:GetService("CoreGui")
+-- Helper function to get or create a ScreenGui in CoreGui
+local function getOrCreateScreenGui()
+    local CoreGui = game:GetService("CoreGui")
+    local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
     
-    -- Check if the GUI already exists
-    local existingGui = coreGui:FindFirstChild("CustomDrawingGui")
     if existingGui then
-        return existingGui
+        return existingGui -- Reuse existing ScreenGui
+    else
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "CustomDrawingGui"
+        screenGui.Parent = CoreGui
+        return screenGui
     end
-    
-    -- Create the GUI if it doesn't exist
-    local newGui = Instance.new("ScreenGui")
-    newGui.Name = "CustomDrawingGui"
-    newGui.ResetOnSpawn = false
-    newGui.Parent = coreGui
-    return newGui
 end
 
--- A constructor method for creating new drawing objects
-function CustomDrawing.new(drawingType)
-    -- Ensure the drawing type is valid
-    if not drawingTypes[drawingType] then
-        error("Unsupported drawing type: " .. tostring(drawingType))
-    end
-    
-    local self = setmetatable({}, CustomDrawing)
-    
-    -- Use or create the CustomDrawingGui within CoreGui
-    local drawingGui = getOrCreateCustomDrawingGui()
+-- Base class for drawing objects
+local DrawingObject = {}
+DrawingObject.__index = DrawingObject
 
-    -- Create a frame for the Line if we are using UI elements
-    if drawingType == "Line" then
-        self.frame = Instance.new("Frame")
-        self.frame.AnchorPoint = Vector2.new(0.5, 0.5) -- Make sure the line is positioned correctly
-        self.frame.BorderSizePixel = 0
-        self.frame.BackgroundColor3 = Color3.new(1, 1, 1) -- Default color white (can change later)
-        self.frame.Parent = drawingGui
-        self.Object = self.frame
-        
-        -- Default properties for a Line
-        self.From = Vector2.new(0, 0)
-        self.To = Vector2.new(0, 0)
-        self.Thickness = 1
-        self.Transparency = 1
-        self.Color = Color3.new(1, 1, 1)
-    end
-
+function DrawingObject.new()
+    local self = setmetatable({}, DrawingObject)
+    self.screenGui = getOrCreateScreenGui()  -- Reuse or create a ScreenGui
     return self
 end
 
--- Method to update the line's size, position, and rotation
-function CustomDrawing:UpdateLine()
-    -- Calculate delta for the position difference
+------------------------------------------------
+-- Line class (inherits from DrawingObject)
+------------------------------------------------
+local Line = {}
+Line.__index = Line
+
+function Line.new()
+    local self = setmetatable(DrawingObject.new(), Line)
+
+    -- Create the frame for the line
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
+    self.frame.Parent = self.screenGui
+
+    -- Default properties for the line
+    self.Thickness = 1
+    self.Transparency = 0
+    self.From = Vector2.new(0, 0)
+    self.To = Vector2.new(100, 100)
+
+    self:update()
+    return self
+end
+
+function Line:update()
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
 
-    -- Calculate the midpoint of the line for positioning
     local midX = (self.From.X + self.To.X) / 2
     local midY = (self.From.Y + self.To.Y) / 2
 
-    -- Set size, position, and rotation for the line
     self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
     self.frame.BackgroundTransparency = self.Transparency
-    self.frame.BackgroundColor3 = self.Color
 end
 
--- Custom property setters, dynamically update the Drawing object
-function CustomDrawing:Set(property, value)
-    if self[property] ~= nil then
-        self[property] = value
-        -- If it's a property affecting the line's appearance, update the line
-        if property == "From" or property == "To" or property == "Thickness" or property == "Transparency" or property == "Color" then
-            self:UpdateLine()
-        end
+------------------------------------------------
+-- Text class (inherits from DrawingObject)
+------------------------------------------------
+local Text = {}
+Text.__index = Text
+
+function Text.new()
+    local self = setmetatable(DrawingObject.new(), Text)
+
+    -- Create the text label
+    self.label = Instance.new("TextLabel")
+    self.label.BackgroundTransparency = 1  -- No background
+    self.label.TextStrokeTransparency = 1  -- Outline initially disabled
+    self.label.Parent = self.screenGui
+
+    -- Default properties
+    self.Text = "Sample Text"
+    self.Size = 24
+    self.Transparency = 0
+    self.Center = false
+    self.Outline = false
+    self.OutlineColor = Color3.new(0, 0, 0)
+    self.Position = Vector2.new(100, 100)
+    self.Font = Enum.Font.SourceSans
+
+    self:update()
+    return self
+end
+
+function Text:update()
+    self.label.Text = self.Text
+    self.label.Font = self.Font
+    self.label.TextSize = self.Size
+    self.label.TextTransparency = self.Transparency
+    self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.label.TextStrokeTransparency = self.Outline and 0 or 1
+    self.label.TextStrokeColor3 = self.OutlineColor
+    self.label.Size = UDim2.new(0, self.label.TextBounds.X, 0, self.label.TextBounds.Y)
+
+    if self.Center then
+        self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
     else
-        error("Invalid property or value: " .. tostring(property))
+        self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     end
 end
 
--- Auto-update mechanism for when you change the properties
-function CustomDrawing.__newindex(t, k, v)
-    if k == "From" or k == "To" or k == "Thickness" or k == "Transparency" or k == "Color" then
-        t:Set(k, v)
+------------------------------------------------
+-- Circle class (inherits from DrawingObject)
+------------------------------------------------
+local Circle = {}
+Circle.__index = Circle
+
+function Circle.new()
+    local self = setmetatable(DrawingObject.new(), Circle)
+
+    -- Create a Frame to simulate the circle using UICorner
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0
+    self.frame.Parent = self.screenGui
+
+    -- Add UICorner to round the frame
+    local corner = Instance.new("UICorner", self.frame)
+    corner.CornerRadius = UDim.new(1, 0)
+
+    -- Default properties
+    self.Transparency = 0
+    self.Thickness = 1
+    self.Radius = 50
+    self.Filled = true
+    self.Position = Vector2.new(200, 200)
+
+    self:update()
+    return self
+end
+
+function Circle:update()
+    self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
+    self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    self.frame.BackgroundTransparency = self.Transparency
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
+
+    if not self.Filled then
+        self.frame.BackgroundTransparency = 1
+        self.frame.BorderSizePixel = self.Thickness
+        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
     else
-        rawset(t, k, v)
+        self.frame.BorderSizePixel = 0
+    end
+end
+
+------------------------------------------------
+-- CustomDrawing creation logic
+------------------------------------------------
+function CustomDrawing.new(drawType)
+    if drawType == "Line" then
+        return Line.new()
+    elseif drawType == "Text" then
+        return Text.new()
+    elseif drawType == "Circle" then
+        return Circle.new()
+    else
+        error("Invalid draw type: " .. tostring(drawType))
     end
 end
 
