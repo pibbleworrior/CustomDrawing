@@ -26,8 +26,16 @@ function DrawingObject.new()
     return self
 end
 
+-- Automatically update when properties change
+setmetatable(DrawingObject, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        if self.update then self:update() end -- Auto-update when properties change
+    end
+})
+
 ------------------------------------------------
--- Line class (inherits from DrawingObject)
+-- Line class
 ------------------------------------------------
 local Line = {}
 Line.__index = Line
@@ -39,7 +47,6 @@ function Line.new()
     self.frame = Instance.new("Frame")
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
     -- Default properties for the line
@@ -67,7 +74,7 @@ function Line:update()
 end
 
 ------------------------------------------------
--- Text class (inherits from DrawingObject)
+-- Text class
 ------------------------------------------------
 local Text = {}
 Text.__index = Text
@@ -84,7 +91,11 @@ function Text.new()
     self.Text = "Sample Text"
     self.Size = 24
     self.Transparency = 0
+    self.Center = false
+    self.Outline = false
+    self.OutlineColor = Color3.new(0, 0, 0)
     self.Position = Vector2.new(100, 100)
+    self.Font = Enum.Font.SourceSans
 
     self:update()
     return self
@@ -92,15 +103,23 @@ end
 
 function Text:update()
     self.label.Text = self.Text
+    self.label.Font = self.Font
     self.label.TextSize = self.Size
     self.label.TextTransparency = self.Transparency
     self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.label.TextStrokeTransparency = self.Outline and 0 or 1
+    self.label.TextStrokeColor3 = self.OutlineColor
     self.label.Size = UDim2.new(0, self.label.TextBounds.X, 0, self.label.TextBounds.Y)
-    self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+
+    if self.Center then
+        self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
+    else
+        self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    end
 end
 
 ------------------------------------------------
--- Circle class (inherits from DrawingObject)
+-- Circle class
 ------------------------------------------------
 local Circle = {}
 Circle.__index = Circle
@@ -123,6 +142,7 @@ function Circle.new()
     self.Thickness = 1
     self.Radius = 50
     self.Position = Vector2.new(200, 200)
+    self.Filled = true
 
     self:update()
     return self
@@ -132,7 +152,89 @@ function Circle:update()
     self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
     self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     self.frame.BackgroundTransparency = self.Transparency
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
+
+    if not self.Filled then
+        self.frame.BackgroundTransparency = 1
+        self.frame.BorderSizePixel = self.Thickness
+        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        self.frame.BorderSizePixel = 0
+    end
+end
+
+------------------------------------------------
+-- Square class
+------------------------------------------------
+local Square = {}
+Square.__index = Square
+
+function Square.new()
+    local self = setmetatable(DrawingObject.new(), Square)
+
+    -- Create the frame for the square
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0
+    self.frame.Parent = self.screenGui
+
+    -- Default properties
+    self.Transparency = 0
+    self.Thickness = 1
+    self.Size = Vector2.new(100, 100)
+    self.Position = Vector2.new(200, 200)
+    self.Filled = true
+
+    self:update()
+    return self
+end
+
+function Square:update()
+    self.frame.Size = UDim2.new(0, self.Size.X, 0, self.Size.Y)
+    self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    self.frame.BackgroundTransparency = self.Transparency
+
+    if not self.Filled then
+        self.frame.BackgroundTransparency = 1
+        self.frame.BorderSizePixel = self.Thickness
+        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        self.frame.BorderSizePixel = 0
+    end
+end
+
+------------------------------------------------
+-- Triangle class
+------------------------------------------------
+local Triangle = {}
+Triangle.__index = Triangle
+
+function Triangle.new()
+    local self = setmetatable(DrawingObject.new(), Triangle)
+
+    -- Create the triangle using 3 frames to form a triangular shape
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0
+    self.frame.Parent = self.screenGui
+
+    -- Default properties
+    self.Transparency = 0
+    self.Thickness = 1
+    self.PointA = Vector2.new(0, 0)
+    self.PointB = Vector2.new(50, 100)
+    self.PointC = Vector2.new(100, 0)
+    self.Filled = true
+
+    self:update()
+    return self
+end
+
+function Triangle:update()
+    -- For now, create a basic frame to represent a triangle.
+    -- You'd need a custom solution for actual triangle rendering.
+    self.frame.Size = UDim2.new(0, 100, 0, 100) -- Placeholder size
+    self.frame.Position = UDim2.new(0, (self.PointA.X + self.PointB.X + self.PointC.X) / 3, 0, (self.PointA.Y + self.PointB.Y + self.PointC.Y) / 3)
+    self.frame.BackgroundTransparency = self.Transparency
 end
 
 ------------------------------------------------
@@ -145,6 +247,10 @@ function CustomDrawing.new(drawType)
         return Text.new()
     elseif drawType == "Circle" then
         return Circle.new()
+    elseif drawType == "Square" then
+        return Square.new()
+    elseif drawType == "Triangle" then
+        return Triangle.new()
     else
         error("Invalid draw type: " .. tostring(drawType))
     end
