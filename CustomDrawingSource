@@ -1,64 +1,166 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
--- Debugging helper function
-local function debugPrint(message)
-    print("[CustomDrawing Debug]: " .. message)
+-- Helper function to get or create a ScreenGui in CoreGui
+local function getOrCreateScreenGui()
+    local CoreGui = game:GetService("CoreGui")
+    local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
+    
+    if existingGui then
+        return existingGui -- Reuse existing ScreenGui
+    else
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "CustomDrawingGui"
+        screenGui.Parent = CoreGui
+        return screenGui
+    end
 end
 
--- Check if module is loaded
-debugPrint("CustomDrawing module loaded successfully")
+-- Base class for drawing objects
+local DrawingObject = {}
+DrawingObject.__index = DrawingObject
+
+function DrawingObject.new()
+    local self = setmetatable({}, DrawingObject)
+    self.screenGui = getOrCreateScreenGui()  -- Reuse or create a ScreenGui
+    return self
+end
 
 ------------------------------------------------
--- Line class (with basic creation debug)
+-- Line class (inherits from DrawingObject)
 ------------------------------------------------
 local Line = {}
 Line.__index = Line
 
 function Line.new()
-    local self = setmetatable({}, Line)
+    local self = setmetatable(DrawingObject.new(), Line)
 
-    -- Test simple creation first
-    debugPrint("Line object created")
+    -- Create the frame for the line
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
+    self.frame.Parent = self.screenGui
 
+    -- Default properties for the line
+    self.Thickness = 1
+    self.Transparency = 0
+    self.From = Vector2.new(0, 0)
+    self.To = Vector2.new(100, 100)
+
+    self:update()
     return self
 end
 
-------------------------------------------------
--- Circle class (with basic creation debug)
-------------------------------------------------
-local Circle = {}
-Circle.__index = Circle
+function Line:update()
+    local deltaX = self.To.X - self.From.X
+    local deltaY = self.To.Y - self.From.Y
+    local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
 
-function Circle.new()
-    local self = setmetatable({}, Circle)
+    local midX = (self.From.X + self.To.X) / 2
+    local midY = (self.From.Y + self.To.Y) / 2
 
-    -- Test simple creation first
-    debugPrint("Circle object created")
-
-    return self
+    self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
+    self.frame.Position = UDim2.new(0, midX, 0, midY)
+    self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
+    self.frame.BackgroundTransparency = self.Transparency
 end
 
 ------------------------------------------------
--- Text class (with basic creation debug)
+-- Text class (inherits from DrawingObject)
 ------------------------------------------------
 local Text = {}
 Text.__index = Text
 
 function Text.new()
-    local self = setmetatable({}, Text)
+    local self = setmetatable(DrawingObject.new(), Text)
 
-    -- Test simple creation first
-    debugPrint("Text object created")
+    -- Create the text label
+    self.label = Instance.new("TextLabel")
+    self.label.BackgroundTransparency = 1  -- No background
+    self.label.TextStrokeTransparency = 1  -- Outline initially disabled
+    self.label.Parent = self.screenGui
 
+    -- Default properties
+    self.Text = "Sample Text"
+    self.Size = 24
+    self.Transparency = 0
+    self.Center = false
+    self.Outline = false
+    self.OutlineColor = Color3.new(0, 0, 0)
+    self.Position = Vector2.new(100, 100)
+    self.Font = Enum.Font.SourceSans
+
+    self:update()
     return self
 end
 
+function Text:update()
+    self.label.Text = self.Text
+    self.label.Font = self.Font
+    self.label.TextSize = self.Size
+    self.label.TextTransparency = self.Transparency
+    self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    self.label.TextStrokeTransparency = self.Outline and 0 or 1
+    self.label.TextStrokeColor3 = self.OutlineColor
+    self.label.Size = UDim2.new(0, self.label.TextBounds.X, 0, self.label.TextBounds.Y)
+
+    if self.Center then
+        self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
+    else
+        self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    end
+end
+
 ------------------------------------------------
--- CustomDrawing creation logic with debugging
+-- Circle class (inherits from DrawingObject)
+------------------------------------------------
+local Circle = {}
+Circle.__index = Circle
+
+function Circle.new()
+    local self = setmetatable(DrawingObject.new(), Circle)
+
+    -- Create a Frame to simulate the circle using UICorner
+    self.frame = Instance.new("Frame")
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.BorderSizePixel = 0
+    self.frame.Parent = self.screenGui
+
+    -- Add UICorner to round the frame
+    local corner = Instance.new("UICorner", self.frame)
+    corner.CornerRadius = UDim.new(1, 0)
+
+    -- Default properties
+    self.Transparency = 0
+    self.Thickness = 1
+    self.Radius = 50
+    self.Filled = true
+    self.Position = Vector2.new(200, 200)
+
+    self:update()
+    return self
+end
+
+function Circle:update()
+    self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
+    self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    self.frame.BackgroundTransparency = self.Transparency
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
+
+    if not self.Filled then
+        self.frame.BackgroundTransparency = 1
+        self.frame.BorderSizePixel = self.Thickness
+        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        self.frame.BorderSizePixel = 0
+    end
+end
+
+------------------------------------------------
+-- CustomDrawing creation logic
 ------------------------------------------------
 function CustomDrawing.new(drawType)
-    debugPrint("CustomDrawing.new called with type: " .. tostring(drawType))
     if drawType == "Line" then
         return Line.new()
     elseif drawType == "Text" then
