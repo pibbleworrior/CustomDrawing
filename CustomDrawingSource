@@ -26,9 +26,7 @@ function DrawingObject.new()
     return self
 end
 
-------------------------------------------------
 -- Line class (inherits from DrawingObject)
-------------------------------------------------
 local Line = {}
 Line.__index = Line
 
@@ -92,12 +90,11 @@ function Line:destroy()
     end
 end
 
-------------------------------------------------
 -- Text class (inherits from DrawingObject)
-------------------------------------------------
 local Text = {}
 Text.__index = Text
 
+-- Text constructor
 function Text.new()
     local self = setmetatable(DrawingObject.new(), Text)
 
@@ -113,24 +110,27 @@ function Text.new()
     self.Transparency = 0
     self.Center = false
     self.Outline = false
-    self.OutlineColor = Color3.new(0, 0, 0)
+    self.OutlineColor = Color3.new(0, 0, 0)  -- Default black outline
     self.Position = Vector2.new(100, 100)
     self.Font = Enum.Font.SourceSans
 
     self:update()
+
     return self
 end
 
 function Text:update()
+    -- Update the text label properties
     self.label.Text = self.Text
     self.label.Font = self.Font
     self.label.TextSize = self.Size
     self.label.TextTransparency = self.Transparency
-    self.label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    self.label.TextStrokeTransparency = self.Outline and 0 or 1
+    self.label.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text by default
+    self.label.TextStrokeTransparency = self.Outline and 0 or 1  -- Toggle outline
     self.label.TextStrokeColor3 = self.OutlineColor
     self.label.Size = UDim2.new(0, self.label.TextBounds.X, 0, self.label.TextBounds.Y)
 
+    -- Position the text based on whether it's centered
     if self.Center then
         self.label.Position = UDim2.new(0, self.Position.X - self.label.TextBounds.X / 2, 0, self.Position.Y - self.label.TextBounds.Y / 2)
     else
@@ -173,6 +173,7 @@ function Text:setPosition(value)
     self:update()
 end
 
+-- TextBounds is read-only, returning the size of the text label
 function Text:getTextBounds()
     return self.label.TextBounds
 end
@@ -188,91 +189,8 @@ function Text:destroy()
     end
 end
 
-------------------------------------------------
--- Circle class (inherits from DrawingObject)
-------------------------------------------------
-local Circle = {}
-Circle.__index = Circle
-
-function Circle.new()
-    local self = setmetatable(DrawingObject.new(), Circle)
-
-    -- Create a Frame to simulate the circle using UICorner
-    self.frame = Instance.new("Frame")
-    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = self.screenGui
-
-    -- Add UICorner to round the frame
-    local corner = Instance.new("UICorner", self.frame)
-    corner.CornerRadius = UDim.new(1, 0)
-
-    -- Default properties
-    self.Transparency = 0
-    self.Thickness = 1
-    self.NumSides = 40  -- Sides approximation for the future
-    self.Radius = 50
-    self.Filled = true
-    self.Position = Vector2.new(200, 200)
-
-    self:update()
-    return self
-end
-
-function Circle:update()
-    self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
-    self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
-    self.frame.BackgroundTransparency = self.Transparency
-    self.frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- White by default
-
-    if not self.Filled then
-        self.frame.BackgroundTransparency = 1
-        self.frame.BorderSizePixel = self.Thickness
-        self.frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
-    else
-        self.frame.BorderSizePixel = 0
-    end
-end
-
-function Circle:setTransparency(value)
-    self.Transparency = value
-    self:update()
-end
-
-function Circle:setThickness(value)
-    self.Thickness = value
-    self:update()
-end
-
-function Circle:setNumSides(value)
-    self.NumSides = value
-    self:update()
-end
-
-function Circle:setRadius(value)
-    self.Radius = value
-    self:update()
-end
-
-function Circle:setFilled(value)
-    self.Filled = value
-    self:update()
-end
-
-function Circle:setPosition(value)
-    self.Position = value
-    self:update()
-end
-
-function Circle:destroy()
-    if self.frame then
-        self.frame:Destroy()
-    end
-end
-
--- Add Line, Text, and Circle classes to the CustomDrawing module
+-- Add the Line and Text classes to the CustomDrawing module
 CustomDrawing.Line = Line
 CustomDrawing.Text = Text
-CustomDrawing.Circle = Circle
 
 return CustomDrawing
