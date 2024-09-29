@@ -11,7 +11,8 @@ local function getOrCreateScreenGui()
     else
         local screenGui = Instance.new("ScreenGui")
         screenGui.Name = "CustomDrawingGui"
-        screenGui.ResetOnSpawn = false -- Ensure the ScreenGui doesn't reset
+        screenGui.ResetOnSpawn = false -- Prevent resetting on respawn
+        screenGui.IgnoreGuiInset = true -- Prevent scaling issues
         screenGui.Parent = CoreGui
         return screenGui
     end
@@ -41,9 +42,10 @@ function Line.new()
     self.frame.Name = "LineFrame"
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
+    self.frame.BackgroundTransparency = 1 -- Hide the frame background
     self.frame.Parent = self.screenGui
 
-    -- No default properties, everything is set dynamically by the user script
+    -- No default properties; they must be set by the user script
     self.Thickness = nil
     self.Transparency = nil
     self.From = nil
@@ -70,7 +72,7 @@ function Line:update()
     self.frame.BackgroundColor3 = self.Color -- Must be set explicitly
 end
 
--- Automatically update whenever any property is changed
+-- Auto-update when properties change
 setmetatable(Line, {
     __newindex = function(self, key, value)
         rawset(self, key, value)
@@ -93,7 +95,7 @@ function Text.new()
     self.label.BackgroundTransparency = 1 -- No background
     self.label.Parent = self.screenGui
 
-    -- No default properties, everything is set dynamically by the user script
+    -- No default properties; they must be set by the user script
     self.Text = nil
     self.Size = nil
     self.Transparency = nil
@@ -125,7 +127,7 @@ function Text:update()
     end
 end
 
--- Automatically update whenever any property is changed
+-- Auto-update when properties change
 setmetatable(Text, {
     __newindex = function(self, key, value)
         rawset(self, key, value)
@@ -153,7 +155,7 @@ function Circle.new()
     local corner = Instance.new("UICorner", self.frame)
     corner.CornerRadius = UDim.new(1, 0)
 
-    -- No default properties, everything is set dynamically by the user script
+    -- No default properties; they must be set by the user script
     self.Transparency = nil
     self.Thickness = nil
     self.Radius = nil
@@ -181,7 +183,7 @@ function Circle:update()
     end
 end
 
--- Automatically update whenever any property is changed
+-- Auto-update when properties change
 setmetatable(Circle, {
     __newindex = function(self, key, value)
         rawset(self, key, value)
