@@ -19,6 +19,15 @@ local function ensureCustomDrawingUi()
     return customDrawingUi
 end
 
+-- Helper function to clamp values and avoid errors
+local function safeSet(instance, property, value)
+    if instance and instance[property] ~= nil and value ~= nil then
+        instance[property] = value
+    else
+        warn("Invalid property or value: " .. tostring(property))
+    end
+end
+
 -- Base class for drawable objects
 local DrawableObject = {}
 DrawableObject.__index = DrawableObject
@@ -31,15 +40,14 @@ function DrawableObject.new(objectType)
 end
 
 function DrawableObject:Set(property, value)
-    if self.instance[property] ~= nil then
-        self.instance[property] = value
-    else
-        warn("Invalid property: " .. property)
-    end
+    safeSet(self.instance, property, value)
 end
 
 function DrawableObject:Destroy()
-    self.instance:Remove()
+    if self.instance then
+        self.instance:Remove()
+        self.instance = nil
+    end
 end
 
 -- Circle class
@@ -49,8 +57,9 @@ Circle.__index = Circle
 function Circle.new()
     local self = DrawableObject.new("Circle")
     setmetatable(self, Circle)
-    self.instance.Radius = 50 -- Default radius
-    self.instance.Position = Vector2.new(0, 0)
+    -- Set default values
+    safeSet(self.instance, "Radius", 50)
+    safeSet(self.instance, "Position", Vector2.new(0, 0))
     return self
 end
 
@@ -61,8 +70,9 @@ Line.__index = Line
 function Line.new()
     local self = DrawableObject.new("Line")
     setmetatable(self, Line)
-    self.instance.From = Vector2.new(0, 0)
-    self.instance.To = Vector2.new(100, 100)
+    -- Set default values
+    safeSet(self.instance, "From", Vector2.new(0, 0))
+    safeSet(self.instance, "To", Vector2.new(100, 100))
     return self
 end
 
@@ -73,21 +83,24 @@ Text.__index = Text
 function Text.new()
     local self = DrawableObject.new("Text")
     setmetatable(self, Text)
-    self.instance.Text = "Default Text"
-    self.instance.Size = 20 -- Default size
-    self.instance.Position = Vector2.new(0, 0)
+    -- Set default values
+    safeSet(self.instance, "Text", "Default Text")
+    safeSet(self.instance, "Size", 20)
+    safeSet(self.instance, "Position", Vector2.new(0, 0))
+    safeSet(self.instance, "Color", Color3.fromRGB(255, 255, 255)) -- Ensure the text has a visible color
     return self
 end
 
--- Square class (using "Square" as Rectangle in Drawing API)
+-- Square class (handled as a rectangle)
 local Square = setmetatable({}, DrawableObject)
 Square.__index = Square
 
 function Square.new()
     local self = DrawableObject.new("Square")
     setmetatable(self, Square)
-    self.instance.Size = Vector2.new(100, 100)
-    self.instance.Position = Vector2.new(0, 0)
+    -- Set default values
+    safeSet(self.instance, "Size", Vector2.new(100, 100))
+    safeSet(self.instance, "Position", Vector2.new(0, 0))
     return self
 end
 
@@ -98,9 +111,10 @@ Triangle.__index = Triangle
 function Triangle.new()
     local self = DrawableObject.new("Triangle")
     setmetatable(self, Triangle)
-    self.instance.PointA = Vector2.new(0, 0)
-    self.instance.PointB = Vector2.new(100, 100)
-    self.instance.PointC = Vector2.new(50, 50)
+    -- Set default values
+    safeSet(self.instance, "PointA", Vector2.new(0, 0))
+    safeSet(self.instance, "PointB", Vector2.new(100, 100))
+    safeSet(self.instance, "PointC", Vector2.new(50, 50))
     return self
 end
 
