@@ -19,10 +19,40 @@ local function ensureCustomDrawingUi()
     return customDrawingUi
 end
 
--- Helper function to clamp values and avoid errors
+-- Helper function to safely set properties, ensuring valid types
 local function safeSet(instance, property, value)
     if instance and instance[property] ~= nil and value ~= nil then
-        instance[property] = value
+        -- Type check for each specific property type
+        if property == "Position" or property == "From" or property == "To" or property == "PointA" or property == "PointB" or property == "PointC" then
+            if typeof(value) == "Vector2" then
+                instance[property] = value
+            else
+                warn(property .. " expects a Vector2 value")
+            end
+        elseif property == "Radius" or property == "Size" or property == "Thickness" or property == "Transparency" then
+            if type(value) == "number" then
+                instance[property] = value
+            else
+                warn(property .. " expects a number value")
+            end
+        elseif property == "Filled" or property == "Outline" then
+            if type(value) == "boolean" then
+                instance[property] = value
+            else
+                warn(property .. " expects a boolean value")
+            end
+        elseif property == "Color" or property == "OutlineColor" then
+            if typeof(value) == "Color3" then
+                instance[property] = value
+            else
+                warn(property .. " expects a Color3 value")
+            end
+        elseif property == "Text" or property == "Font" then
+            instance[property] = value -- Handle Text and Enum.Font (no strict check)
+        else
+            -- For any other property that might exist, assign it safely
+            instance[property] = value
+        end
     else
         warn("Invalid property or value: " .. tostring(property))
     end
