@@ -26,16 +26,8 @@ function DrawingObject.new()
     return self
 end
 
--- Automatically update when properties change
-setmetatable(DrawingObject, {
-    __newindex = function(self, key, value)
-        rawset(self, key, value)
-        if self.update then self:update() end -- Auto-update when properties change
-    end
-})
-
 ------------------------------------------------
--- Line class
+-- Line class (inherits from DrawingObject)
 ------------------------------------------------
 local Line = {}
 Line.__index = Line
@@ -47,6 +39,7 @@ function Line.new()
     self.frame = Instance.new("Frame")
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
+    self.frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red line for visibility
     self.frame.Parent = self.screenGui
 
     -- Default properties for the line
@@ -55,7 +48,6 @@ function Line.new()
     self.From = Vector2.new(0, 0)
     self.To = Vector2.new(100, 100)
 
-    self:update()
     return self
 end
 
@@ -73,8 +65,15 @@ function Line:update()
     self.frame.BackgroundTransparency = self.Transparency
 end
 
+setmetatable(Line, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically call update on every change
+    end
+})
+
 ------------------------------------------------
--- Text class
+-- Text class (inherits from DrawingObject)
 ------------------------------------------------
 local Text = {}
 Text.__index = Text
@@ -91,13 +90,12 @@ function Text.new()
     self.Text = "Sample Text"
     self.Size = 24
     self.Transparency = 0
+    self.Position = Vector2.new(100, 100)
     self.Center = false
     self.Outline = false
     self.OutlineColor = Color3.new(0, 0, 0)
-    self.Position = Vector2.new(100, 100)
     self.Font = Enum.Font.SourceSans
 
-    self:update()
     return self
 end
 
@@ -118,8 +116,15 @@ function Text:update()
     end
 end
 
+setmetatable(Text, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically call update on every change
+    end
+})
+
 ------------------------------------------------
--- Circle class
+-- Circle class (inherits from DrawingObject)
 ------------------------------------------------
 local Circle = {}
 Circle.__index = Circle
@@ -144,7 +149,6 @@ function Circle.new()
     self.Position = Vector2.new(200, 200)
     self.Filled = true
 
-    self:update()
     return self
 end
 
@@ -162,8 +166,15 @@ function Circle:update()
     end
 end
 
+setmetatable(Circle, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically call update on every change
+    end
+})
+
 ------------------------------------------------
--- Square class
+-- Square class (inherits from DrawingObject)
 ------------------------------------------------
 local Square = {}
 Square.__index = Square
@@ -184,7 +195,6 @@ function Square.new()
     self.Position = Vector2.new(200, 200)
     self.Filled = true
 
-    self:update()
     return self
 end
 
@@ -202,40 +212,12 @@ function Square:update()
     end
 end
 
-------------------------------------------------
--- Triangle class
-------------------------------------------------
-local Triangle = {}
-Triangle.__index = Triangle
-
-function Triangle.new()
-    local self = setmetatable(DrawingObject.new(), Triangle)
-
-    -- Create the triangle using 3 frames to form a triangular shape
-    self.frame = Instance.new("Frame")
-    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = self.screenGui
-
-    -- Default properties
-    self.Transparency = 0
-    self.Thickness = 1
-    self.PointA = Vector2.new(0, 0)
-    self.PointB = Vector2.new(50, 100)
-    self.PointC = Vector2.new(100, 0)
-    self.Filled = true
-
-    self:update()
-    return self
-end
-
-function Triangle:update()
-    -- For now, create a basic frame to represent a triangle.
-    -- You'd need a custom solution for actual triangle rendering.
-    self.frame.Size = UDim2.new(0, 100, 0, 100) -- Placeholder size
-    self.frame.Position = UDim2.new(0, (self.PointA.X + self.PointB.X + self.PointC.X) / 3, 0, (self.PointA.Y + self.PointB.Y + self.PointC.Y) / 3)
-    self.frame.BackgroundTransparency = self.Transparency
-end
+setmetatable(Square, {
+    __newindex = function(self, key, value)
+        rawset(self, key, value)
+        self:update() -- Automatically call update on every change
+    end
+})
 
 ------------------------------------------------
 -- CustomDrawing creation logic
@@ -249,8 +231,6 @@ function CustomDrawing.new(drawType)
         return Circle.new()
     elseif drawType == "Square" then
         return Square.new()
-    elseif drawType == "Triangle" then
-        return Triangle.new()
     else
         error("Invalid draw type: " .. tostring(drawType))
     end
