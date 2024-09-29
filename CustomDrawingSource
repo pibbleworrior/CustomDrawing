@@ -27,6 +27,7 @@ end
 
 -- A constructor method for creating new drawing objects
 function CustomDrawing.new(drawingType)
+    -- Ensure the drawing type is valid
     if not drawingTypes[drawingType] then
         error("Unsupported drawing type: " .. tostring(drawingType))
     end
@@ -58,13 +59,16 @@ end
 
 -- Method to update the line's size, position, and rotation
 function CustomDrawing:UpdateLine()
+    -- Calculate delta for the position difference
     local deltaX = self.To.X - self.From.X
     local deltaY = self.To.Y - self.From.Y
     local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
 
+    -- Calculate the midpoint of the line for positioning
     local midX = (self.From.X + self.To.X) / 2
     local midY = (self.From.Y + self.To.Y) / 2
 
+    -- Set size, position, and rotation for the line
     self.frame.Size = UDim2.new(0, distance, 0, self.Thickness)
     self.frame.Position = UDim2.new(0, midX, 0, midY)
     self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
@@ -84,13 +88,6 @@ function CustomDrawing:Set(property, value)
         error("Invalid property or value: " .. tostring(property))
     end
 end
-
--- Example usage:
--- local myLine = CustomDrawing.new("Line")
--- myLine:Set("From", Vector2.new(100, 100))
--- myLine:Set("To", Vector2.new(400, 300))
--- myLine:Set("Thickness", 5)
--- myLine:Set("Transparency", 0.5)
 
 -- Auto-update mechanism for when you change the properties
 function CustomDrawing.__newindex(t, k, v)
