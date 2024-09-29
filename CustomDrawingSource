@@ -4,7 +4,7 @@
 local CustomDrawingModule = {}
 CustomDrawingModule.__index = CustomDrawingModule
 
--- Create or retrieve the CustomDrawingUI in CoreGui
+-- Ensure CustomDrawingUi exists
 local function ensureCustomDrawingUi()
     local coreGui = game:GetService("CoreGui")
     local customDrawingUi = coreGui:FindFirstChild("CustomDrawingUi")
@@ -19,120 +19,170 @@ local function ensureCustomDrawingUi()
     return customDrawingUi
 end
 
--- Circle handler
-local function createCircle()
-    local circle = Drawing.new("Circle")
-    return setmetatable({}, {
-        __index = function(_, key)
-            return circle[key]
-        end,
-        __newindex = function(_, key, value)
-            if circle[key] ~= nil then
-                circle[key] = value
-            else
-                warn("Invalid property for Circle: " .. tostring(key))
-            end
-        end,
-        __tostring = function()
-            return "Circle"
-        end
-    })
+-- Base object class
+local BaseObject = {}
+BaseObject.__index = BaseObject
+
+function BaseObject:new(name, parent)
+    local self = setmetatable({}, BaseObject)
+    self.name = name
+    self.parent = parent
+    return self
 end
 
--- Line handler
-local function createLine()
-    local line = Drawing.new("Line")
-    return setmetatable({}, {
-        __index = function(_, key)
-            return line[key]
-        end,
-        __newindex = function(_, key, value)
-            if line[key] ~= nil then
-                line[key] = value
-            else
-                warn("Invalid property for Line: " .. tostring(key))
-            end
-        end,
-        __tostring = function()
-            return "Line"
-        end
-    })
+-- Circle class
+local Circle = setmetatable({}, BaseObject)
+Circle.__index = Circle
+
+function Circle.new()
+    local gui = ensureCustomDrawingUi()
+    local self = setmetatable(BaseObject:new("Circle", gui), Circle)
+
+    -- Create the UI representation for the circle (ImageLabel or Frame)
+    self.frame = Instance.new("Frame")
+    self.frame.Name = "Circle"
+    self.frame.BackgroundColor3 = Color3.new(1, 1, 1)
+    self.frame.BackgroundTransparency = 1 -- Default to transparent
+    self.frame.BorderSizePixel = 0
+    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    self.frame.Parent = gui
+
+    self.size = 50 -- Default size
+    self.position = Vector2.new(100, 100) -- Default position
+    self.transparency = 0
+    self.filled = false
+
+    self:updateVisual()
+    return self
 end
 
--- Text handler
-local function createText()
-    local text = Drawing.new("Text")
-    return setmetatable({}, {
-        __index = function(_, key)
-            return text[key]
-        end,
-        __newindex = function(_, key, value)
-            if text[key] ~= nil then
-                text[key] = value
-            else
-                warn("Invalid property for Text: " .. tostring(key))
-            end
-        end,
-        __tostring = function()
-            return "Text"
+function Circle:updateVisual()
+    self.frame.Size = UDim2.new(0, self.size, 0, self.size)
+    self.frame.Position = UDim2.new(0, self.position.X, 0, self.position.Y)
+    self.frame.BackgroundTransparency = self.transparency
+    if self.filled then
+        self.frame.BackgroundColor3 = Color3.new(1, 1, 1) -- Filled color
+    else
+        self.frame.BackgroundColor3 = Color3.new(0, 0, 0) -- Outline color
+        self.frame.BackgroundTransparency = 1 -- Transparent background for outline
+        -- Use a UIStroke for the outline
+        if not self.frame:FindFirstChild("UIStroke") then
+            local stroke = Instance.new("UIStroke", self.frame)
+            stroke.Color = Color3.new(1, 1, 1)
         end
-    })
+    end
 end
 
--- Square handler (Rectangle)
-local function createSquare()
-    local square = Drawing.new("Square")
-    return setmetatable({}, {
-        __index = function(_, key)
-            return square[key]
-        end,
-        __newindex = function(_, key, value)
-            if square[key] ~= nil then
-                square[key] = value
-            else
-                warn("Invalid property for Square: " .. tostring(key))
-            end
-        end,
-        __tostring = function()
-            return "Square"
-        end
-    })
+-- Dynamic property setting
+function Circle:Set(property, value)
+    if property == "Radius" then
+        self.size = value * 2 -- Double radius to get diameter
+    elseif property == "Position" then
+        self.position = value
+    elseif property == "Transparency" then
+        self.transparency = value
+    elseif property == "Filled" then
+        self.filled = value
+    end
+    self:updateVisual()
 end
 
--- Triangle handler
-local function createTriangle()
-    local triangle = Drawing.new("Triangle")
-    return setmetatable({}, {
-        __index = function(_, key)
-            return triangle[key]
-        end,
-        __newindex = function(_, key, value)
-            if triangle[key] ~= nil then
-                triangle[key] = value
-            else
-                warn("Invalid property for Triangle: " .. tostring(key))
-            end
-        end,
-        __tostring = function()
-            return "Triangle"
-        end
-    })
+-- Line class
+local Line = setmetatable({}, BaseObject)
+Line.__index = Line
+
+function Line.new()
+    local gui = ensureCustomDrawingUi()
+    local self = setmetatable(BaseObject:new("Line", gui), Line)
+
+    -- Create a Frame or ImageLabel to represent the line
+    self.frame = Instance.new("Frame")
+    self.frame.Name = "Line"
+    self.frame.BackgroundColor3 = Color3.new(1, 1, 1)
+    self.frame.BorderSizePixel = 0
+    self.frame.Parent = gui
+
+    self.from = Vector2.new(100, 100)
+    self.to = Vector2.new(200, 200)
+    self.thickness = 2
+
+    self:updateVisual()
+    return self
+end
+
+function Line:updateVisual()
+    local deltaX = self.to.X - self.from.X
+    local deltaY = self.to.Y - self.from.Y
+    local length = math.sqrt(deltaX * deltaX + deltaY * deltaY)
+    local angle = math.atan2(deltaY, deltaX)
+
+    self.frame.Size = UDim2.new(0, length, 0, self.thickness)
+    self.frame.Position = UDim2.new(0, self.from.X, 0, self.from.Y)
+    self.frame.Rotation = math.deg(angle)
+end
+
+function Line:Set(property, value)
+    if property == "From" then
+        self.from = value
+    elseif property == "To" then
+        self.to = value
+    elseif property == "Thickness" then
+        self.thickness = value
+    end
+    self:updateVisual()
+end
+
+-- Text class
+local Text = setmetatable({}, BaseObject)
+Text.__index = Text
+
+function Text.new()
+    local gui = ensureCustomDrawingUi()
+    local self = setmetatable(BaseObject:new("Text", gui), Text)
+
+    -- Create a TextLabel for the text object
+    self.textLabel = Instance.new("TextLabel")
+    self.textLabel.Name = "Text"
+    self.textLabel.BackgroundTransparency = 1
+    self.textLabel.TextColor3 = Color3.new(1, 1, 1)
+    self.textLabel.Size = UDim2.new(0, 100, 0, 50)
+    self.textLabel.Parent = gui
+
+    self.text = "Default Text"
+    self.size = 14
+    self.position = Vector2.new(100, 100)
+
+    self:updateVisual()
+    return self
+end
+
+function Text:updateVisual()
+    self.textLabel.Text = self.text
+    self.textLabel.Size = UDim2.new(0, self.size * 10, 0, self.size) -- Approximate size
+    self.textLabel.Position = UDim2.new(0, self.position.X, 0, self.position.Y)
+end
+
+function Text:Set(property, value)
+    if property == "Text" then
+        self.text = value
+    elseif property == "Size" then
+        self.size = value
+    elseif property == "Position" then
+        self.position = value
+    end
+    self:updateVisual()
 end
 
 -- Factory method to create new drawable objects
 function CustomDrawingModule.new(objectType)
     ensureCustomDrawingUi()
-    
+
     if objectType == "Circle" then
-        return createCircle()
+        return Circle.new()
     elseif objectType == "Line" then
-        return createLine()
+        return Line.new()
     elseif objectType == "Text" then
-        return createText()
-    elseif objectType == "Square" then
-        return createSquare()
-    elseif objectType == "Triangle" then
-        return createTriangle()
+        return Text.new()
     else
         error("Unknown object type: " .. tostring(objectType))
     end
