@@ -23,14 +23,15 @@ DrawingObject.__index = DrawingObject
 function DrawingObject.new()
     local self = setmetatable({}, DrawingObject)
     self.screenGui = getOrCreateScreenGui()  -- Reuse or create a ScreenGui
+    self.properties = {} -- Store properties here
     return self
 end
 
--- Set property and trigger an update
+-- Helper function to set property and trigger an update
 local function setPropertyAndUpdate(self, key, value)
-    rawset(self, key, value) -- Store the property
+    self.properties[key] = value -- Store the property
     if self.update then
-        self:update(key) -- Call update to reflect changes
+        self:update(key) -- Trigger an update for the changed property
     end
 end
 
@@ -53,21 +54,20 @@ function Line.new()
 end
 
 function Line:update(changedProperty)
-    -- Only update if From and To are set
-    if self.From and self.To then
-        local deltaX = self.To.X - self.From.X
-        local deltaY = self.To.Y - self.From.Y
+    if self.properties.From and self.properties.To then
+        local deltaX = self.properties.To.X - self.properties.From.X
+        local deltaY = self.properties.To.Y - self.properties.From.Y
         local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
 
-        local midX = (self.From.X + self.To.X) / 2
-        local midY = (self.From.Y + self.To.Y) / 2
+        local midX = (self.properties.From.X + self.properties.To.X) / 2
+        local midY = (self.properties.From.Y + self.properties.To.Y) / 2
 
-        self.frame.Size = UDim2.new(0, distance, 0, self.Thickness or 1)
+        self.frame.Size = UDim2.new(0, distance, 0, self.properties.Thickness or 1)
         self.frame.Position = UDim2.new(0, midX, 0, midY)
         self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
 
-        if self.Transparency then
-            self.frame.BackgroundTransparency = self.Transparency
+        if self.properties.Transparency then
+            self.frame.BackgroundTransparency = self.properties.Transparency
         end
     end
 end
@@ -96,24 +96,23 @@ function Text.new()
 end
 
 function Text:update(changedProperty)
-    -- Only update if Text and Position are set
-    if self.Text then
-        self.label.Text = self.Text
+    if self.properties.Text then
+        self.label.Text = self.properties.Text
     end
-    if self.Size then
-        self.label.TextSize = self.Size
+    if self.properties.Size then
+        self.label.TextSize = self.properties.Size
     end
-    if self.Transparency then
-        self.label.TextTransparency = self.Transparency
+    if self.properties.Transparency then
+        self.label.TextTransparency = self.properties.Transparency
     end
-    if self.Outline and self.OutlineColor then
+    if self.properties.Outline and self.properties.OutlineColor then
         self.label.TextStrokeTransparency = 0
-        self.label.TextStrokeColor3 = self.OutlineColor
+        self.label.TextStrokeColor3 = self.properties.OutlineColor
     else
         self.label.TextStrokeTransparency = 1
     end
-    if self.Position then
-        self.label.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    if self.properties.Position then
+        self.label.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
     end
 end
 
@@ -146,17 +145,17 @@ function Circle.new()
 end
 
 function Circle:update(changedProperty)
-    if self.Radius and self.Position then
-        self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
-        self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    if self.properties.Radius and self.properties.Position then
+        self.frame.Size = UDim2.new(0, self.properties.Radius * 2, 0, self.properties.Radius * 2)
+        self.frame.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
     end
-    if self.Transparency then
-        self.frame.BackgroundTransparency = self.Transparency
+    if self.properties.Transparency then
+        self.frame.BackgroundTransparency = self.properties.Transparency
     end
-    if self.Filled == false then
+    if self.properties.Filled == false then
         self.frame.BackgroundTransparency = 1
-        if self.Thickness then
-            self.frame.BorderSizePixel = self.Thickness
+        if self.properties.Thickness then
+            self.frame.BorderSizePixel = self.properties.Thickness
         end
     else
         self.frame.BorderSizePixel = 0
@@ -188,17 +187,17 @@ function Square.new()
 end
 
 function Square:update(changedProperty)
-    if self.Size and self.Position then
-        self.frame.Size = UDim2.new(0, self.Size.X, 0, self.Size.Y)
-        self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
+    if self.properties.Size and self.properties.Position then
+        self.frame.Size = UDim2.new(0, self.properties.Size.X, 0, self.properties.Size.Y)
+        self.frame.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
     end
-    if self.Transparency then
-        self.frame.BackgroundTransparency = self.Transparency
+    if self.properties.Transparency then
+        self.frame.BackgroundTransparency = self.properties.Transparency
     end
-    if self.Filled == false then
+    if self.properties.Filled == false then
         self.frame.BackgroundTransparency = 1
-        if self.Thickness then
-            self.frame.BorderSizePixel = self.Thickness
+        if self.properties.Thickness then
+            self.frame.BorderSizePixel = self.properties.Thickness
         end
     else
         self.frame.BorderSizePixel = 0
@@ -231,14 +230,14 @@ end
 
 function Triangle:update(changedProperty)
     -- Placeholder for proper triangle drawing logic. Currently using a frame.
-    if self.PointA and self.PointB and self.PointC then
-        local midX = (self.PointA.X + self.PointB.X + self.PointC.X) / 3
-        local midY = (self.PointA.Y + self.PointB.Y + self.PointC.Y) / 3
+    if self.properties.PointA and self.properties.PointB and self.properties.PointC then
+        local midX = (self.properties.PointA.X + self.properties.PointB.X + self.properties.PointC.X) / 3
+        local midY = (self.properties.PointA.Y + self.properties.PointB.Y + self.properties.PointC.Y) / 3
         self.frame.Size = UDim2.new(0, 100, 0, 100) -- Placeholder size
         self.frame.Position = UDim2.new(0, midX, 0, midY)
     end
-    if self.Transparency then
-        self.frame.BackgroundTransparency = self.Transparency
+    if self.properties.Transparency then
+        self.frame.BackgroundTransparency = self.properties.Transparency
     end
 end
 
