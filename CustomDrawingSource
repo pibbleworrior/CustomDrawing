@@ -1,131 +1,109 @@
-local CustomDrawing = {}
-CustomDrawing.__index = CustomDrawing
+-- CustomDrawingModule.lua
 
--- Helper function to get or create a ScreenGui in CoreGui
-local function getOrCreateScreenGui()
-    local CoreGui = game:GetService("CoreGui")
-    local existingGui = CoreGui:FindFirstChild("CustomDrawingGui")
+-- Define the module
+local CustomDrawingModule = {}
+CustomDrawingModule.__index = CustomDrawingModule
+
+-- Create or retrieve the CustomDrawingUI in CoreGui
+local function ensureCustomDrawingUi()
+    local coreGui = game:GetService("CoreGui")
+    local customDrawingUi = coreGui:FindFirstChild("CustomDrawingUi")
     
-    if existingGui then
-        return existingGui -- Reuse existing ScreenGui
-    else
-        local screenGui = Instance.new("ScreenGui")
-        screenGui.Name = "CustomDrawingGui"
-        screenGui.Parent = CoreGui
-        return screenGui
+    if not customDrawingUi then
+        customDrawingUi = Instance.new("ScreenGui")
+        customDrawingUi.Name = "CustomDrawingUi"
+        customDrawingUi.Parent = coreGui
     end
+    
+    return customDrawingUi
 end
 
--- Base class for drawing objects
-local DrawingObject = {}
-DrawingObject.__index = DrawingObject
+-- Base class for drawable objects
+local DrawableObject = {}
+DrawableObject.__index = DrawableObject
 
-function DrawingObject.new()
-    local self = setmetatable({}, DrawingObject)
-    self.screenGui = getOrCreateScreenGui()  -- Reuse or create a ScreenGui
+function DrawableObject.new(objectType)
+    local self = setmetatable({}, DrawableObject)
+    self.objectType = objectType
+    self.instance = Drawing.new(objectType)
     return self
 end
 
--- Set property and trigger an update
-local function setPropertyAndUpdate(self, key, value)
-    self[key] = value  -- Store the property
-    if self.update then
-        self:update(key)  -- Call the update function after a property is changed
-    end
+function DrawableObject:Set(property, value)
+    self.instance[property] = value
 end
 
-------------------------------------------------
--- Line class
-------------------------------------------------
-local Line = {}
-Line.__index = Line
-
-function Line.new()
-    local self = setmetatable(DrawingObject.new(), Line)
-
-    -- Create the frame for the line
-    self.frame = Instance.new("Frame")
-    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = self.screenGui
-
-    return self
+function DrawableObject:Destroy()
+    self.instance:Remove()
 end
 
-function Line:update()
-    if self.From and self.To then
-        local deltaX = self.To.X - self.From.X
-        local deltaY = self.To.Y - self.From.Y
-        local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
-
-        local midX = (self.From.X + self.To.X) / 2
-        local midY = (self.From.Y + self.To.Y) / 2
-
-        self.frame.Size = UDim2.new(0, distance, 0, self.Thickness or 1)
-        self.frame.Position = UDim2.new(0, midX, 0, midY)
-        self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
-
-        if self.Transparency then
-            self.frame.BackgroundTransparency = self.Transparency
-        end
-    end
-end
-
-setmetatable(Line, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
-
-------------------------------------------------
 -- Circle class
-------------------------------------------------
-local Circle = {}
+local Circle = setmetatable({}, DrawableObject)
 Circle.__index = Circle
 
 function Circle.new()
-    local self = setmetatable(DrawingObject.new(), Circle)
-
-    -- Create a Frame to simulate the circle using UICorner
-    self.frame = Instance.new("Frame")
-    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = self.screenGui
-
-    -- Add UICorner to round the frame
-    local corner = Instance.new("UICorner", self.frame)
-    corner.CornerRadius = UDim.new(1, 0)
-
+    local self = DrawableObject.new("Circle")
+    setmetatable(self, Circle)
     return self
 end
 
-function Circle:update()
-    if self.Radius and self.Position then
-        self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
-        self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
-    end
-    if self.Transparency then
-        self.frame.BackgroundTransparency = self.Transparency
-    end
+-- Line class
+local Line = setmetatable({}, DrawableObject)
+Line.__index = Line
+
+function Line.new()
+    local self = DrawableObject.new("Line")
+    setmetatable(self, Line)
+    return self
 end
 
-setmetatable(Circle, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
+-- Text class
+local Text = setmetatable({}, DrawableObject)
+Text.__index = Text
 
-------------------------------------------------
--- CustomDrawing creation logic
-------------------------------------------------
-function CustomDrawing.new(drawType)
-    if drawType == "Line" then
-        return Line.new()
-    elseif drawType == "Circle" then
+function Text.new()
+    local self = DrawableObject.new("Text")
+    setmetatable(self, Text)
+    return self
+end
+
+-- Square class
+local Square = setmetatable({}, DrawableObject)
+Square.__index = Square
+
+function Square.new()
+    local self = DrawableObject.new("Square")
+    setmetatable(self, Square)
+    return self
+end
+
+-- Triangle class
+local Triangle = setmetatable({}, DrawableObject)
+Triangle.__index = Triangle
+
+function Triangle.new()
+    local self = DrawableObject.new("Triangle")
+    setmetatable(self, Triangle)
+    return self
+end
+
+-- Factory method to create new drawable objects
+function CustomDrawingModule.new(objectType)
+    ensureCustomDrawingUi()
+    
+    if objectType == "Circle" then
         return Circle.new()
+    elseif objectType == "Line" then
+        return Line.new()
+    elseif objectType == "Text" then
+        return Text.new()
+    elseif objectType == "Square" then
+        return Square.new()
+    elseif objectType == "Triangle" then
+        return Triangle.new()
     else
-        error("Invalid draw type: " .. tostring(drawType))
+        error("Unknown object type: " .. tostring(objectType))
     end
 end
 
-return CustomDrawing
+return CustomDrawingModule
