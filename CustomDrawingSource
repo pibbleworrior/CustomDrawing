@@ -1,6 +1,9 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
+local RunService = game:GetService("RunService")
+local HeartbeatConnections = {}
+
 -- Helper function to get or create a ScreenGui in CoreGui
 local function getOrCreateScreenGui()
     local CoreGui = game:GetService("CoreGui")
@@ -24,15 +27,19 @@ function DrawingObject.new()
     local self = setmetatable({}, DrawingObject)
     self.screenGui = getOrCreateScreenGui()  -- Reuse or create a ScreenGui
     self.properties = {} -- Store properties here
-    return self
-end
+    self.shouldUpdate = true -- Flag to ensure the update loop runs
 
--- Helper function to set property and trigger an update
-local function setPropertyAndUpdate(self, key, value)
-    self.properties[key] = value -- Store the property
-    if self.update then
-        self:update(key) -- Trigger an update for the changed property
+    -- Automatically update every frame
+    local function updateLoop()
+        RunService.Heartbeat:Connect(function()
+            if self.shouldUpdate and self.update then
+                self:update()
+            end
+        end)
     end
+
+    updateLoop()
+    return self
 end
 
 ------------------------------------------------
@@ -53,7 +60,7 @@ function Line.new()
     return self
 end
 
-function Line:update(changedProperty)
+function Line:update()
     if self.properties.From and self.properties.To then
         local deltaX = self.properties.To.X - self.properties.From.X
         local deltaY = self.properties.To.Y - self.properties.From.Y
@@ -72,12 +79,6 @@ function Line:update(changedProperty)
     end
 end
 
-setmetatable(Line, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
-
 ------------------------------------------------
 -- Text class
 ------------------------------------------------
@@ -95,7 +96,7 @@ function Text.new()
     return self
 end
 
-function Text:update(changedProperty)
+function Text:update()
     if self.properties.Text then
         self.label.Text = self.properties.Text
     end
@@ -115,12 +116,6 @@ function Text:update(changedProperty)
         self.label.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
     end
 end
-
-setmetatable(Text, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
 
 ------------------------------------------------
 -- Circle class
@@ -144,7 +139,7 @@ function Circle.new()
     return self
 end
 
-function Circle:update(changedProperty)
+function Circle:update()
     if self.properties.Radius and self.properties.Position then
         self.frame.Size = UDim2.new(0, self.properties.Radius * 2, 0, self.properties.Radius * 2)
         self.frame.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
@@ -161,12 +156,6 @@ function Circle:update(changedProperty)
         self.frame.BorderSizePixel = 0
     end
 end
-
-setmetatable(Circle, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
 
 ------------------------------------------------
 -- Square class
@@ -186,7 +175,7 @@ function Square.new()
     return self
 end
 
-function Square:update(changedProperty)
+function Square:update()
     if self.properties.Size and self.properties.Position then
         self.frame.Size = UDim2.new(0, self.properties.Size.X, 0, self.properties.Size.Y)
         self.frame.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
@@ -203,12 +192,6 @@ function Square:update(changedProperty)
         self.frame.BorderSizePixel = 0
     end
 end
-
-setmetatable(Square, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
 
 ------------------------------------------------
 -- Triangle class
@@ -228,7 +211,7 @@ function Triangle.new()
     return self
 end
 
-function Triangle:update(changedProperty)
+function Triangle:update()
     -- Placeholder for proper triangle drawing logic. Currently using a frame.
     if self.properties.PointA and self.properties.PointB and self.properties.PointC then
         local midX = (self.properties.PointA.X + self.properties.PointB.X + self.properties.PointC.X) / 3
@@ -240,12 +223,6 @@ function Triangle:update(changedProperty)
         self.frame.BackgroundTransparency = self.properties.Transparency
     end
 end
-
-setmetatable(Triangle, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
 
 ------------------------------------------------
 -- CustomDrawing creation logic
