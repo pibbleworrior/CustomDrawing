@@ -19,133 +19,55 @@ local function ensureCustomDrawingUi()
     return customDrawingUi
 end
 
--- Helper function to safely set properties, ensuring valid types
-local function safeSet(instance, property, value)
-    if instance and instance[property] ~= nil and value ~= nil then
-        -- Type check for each specific property type
-        if property == "Position" or property == "From" or property == "To" or property == "PointA" or property == "PointB" or property == "PointC" then
-            if typeof(value) == "Vector2" then
-                instance[property] = value
+-- Drawable object metatable setup
+local function setupObject(objectType)
+    local drawingObject = Drawing.new(objectType)
+    return setmetatable({}, {
+        __index = function(_, key)
+            return drawingObject[key]
+        end,
+        __newindex = function(_, key, value)
+            if drawingObject[key] ~= nil then
+                drawingObject[key] = value
             else
-                warn(property .. " expects a Vector2 value")
+                warn("Invalid property: " .. tostring(key))
             end
-        elseif property == "Radius" or property == "Size" or property == "Thickness" or property == "Transparency" then
-            if type(value) == "number" then
-                instance[property] = value
-            else
-                warn(property .. " expects a number value")
-            end
-        elseif property == "Filled" or property == "Outline" then
-            if type(value) == "boolean" then
-                instance[property] = value
-            else
-                warn(property .. " expects a boolean value")
-            end
-        elseif property == "Color" or property == "OutlineColor" then
-            if typeof(value) == "Color3" then
-                instance[property] = value
-            else
-                warn(property .. " expects a Color3 value")
-            end
-        elseif property == "Text" or property == "Font" then
-            instance[property] = value -- Handle Text and Enum.Font (no strict check)
-        else
-            -- For any other property that might exist, assign it safely
-            instance[property] = value
-        end
-    else
-        warn("Invalid property or value: " .. tostring(property))
-    end
-end
-
--- Base class for drawable objects
-local DrawableObject = {}
-DrawableObject.__index = DrawableObject
-
-function DrawableObject.new(objectType)
-    local self = setmetatable({}, DrawableObject)
-    self.objectType = objectType
-    self.instance = Drawing.new(objectType)
-    return self
-end
-
-function DrawableObject:Set(property, value)
-    safeSet(self.instance, property, value)
-end
-
-function DrawableObject:Destroy()
-    if self.instance then
-        self.instance:Remove()
-        self.instance = nil
-    end
+        end,
+        __tostring = function()
+            return objectType
+        end,
+        __metatable = "Locked"
+    }), drawingObject
 end
 
 -- Circle class
-local Circle = setmetatable({}, DrawableObject)
-Circle.__index = Circle
-
-function Circle.new()
-    local self = DrawableObject.new("Circle")
-    setmetatable(self, Circle)
-    -- Set default values
-    safeSet(self.instance, "Radius", 50)
-    safeSet(self.instance, "Position", Vector2.new(0, 0))
-    return self
+local function createCircle()
+    local circle, _ = setupObject("Circle")
+    return circle
 end
 
 -- Line class
-local Line = setmetatable({}, DrawableObject)
-Line.__index = Line
-
-function Line.new()
-    local self = DrawableObject.new("Line")
-    setmetatable(self, Line)
-    -- Set default values
-    safeSet(self.instance, "From", Vector2.new(0, 0))
-    safeSet(self.instance, "To", Vector2.new(100, 100))
-    return self
+local function createLine()
+    local line, _ = setupObject("Line")
+    return line
 end
 
 -- Text class
-local Text = setmetatable({}, DrawableObject)
-Text.__index = Text
-
-function Text.new()
-    local self = DrawableObject.new("Text")
-    setmetatable(self, Text)
-    -- Set default values
-    safeSet(self.instance, "Text", "Default Text")
-    safeSet(self.instance, "Size", 20)
-    safeSet(self.instance, "Position", Vector2.new(0, 0))
-    safeSet(self.instance, "Color", Color3.fromRGB(255, 255, 255)) -- Ensure the text has a visible color
-    return self
+local function createText()
+    local text, _ = setupObject("Text")
+    return text
 end
 
--- Square class (handled as a rectangle)
-local Square = setmetatable({}, DrawableObject)
-Square.__index = Square
-
-function Square.new()
-    local self = DrawableObject.new("Square")
-    setmetatable(self, Square)
-    -- Set default values
-    safeSet(self.instance, "Size", Vector2.new(100, 100))
-    safeSet(self.instance, "Position", Vector2.new(0, 0))
-    return self
+-- Square (Rectangle) class
+local function createSquare()
+    local square, _ = setupObject("Square")
+    return square
 end
 
 -- Triangle class
-local Triangle = setmetatable({}, DrawableObject)
-Triangle.__index = Triangle
-
-function Triangle.new()
-    local self = DrawableObject.new("Triangle")
-    setmetatable(self, Triangle)
-    -- Set default values
-    safeSet(self.instance, "PointA", Vector2.new(0, 0))
-    safeSet(self.instance, "PointB", Vector2.new(100, 100))
-    safeSet(self.instance, "PointC", Vector2.new(50, 50))
-    return self
+local function createTriangle()
+    local triangle, _ = setupObject("Triangle")
+    return triangle
 end
 
 -- Factory method to create new drawable objects
@@ -153,15 +75,15 @@ function CustomDrawingModule.new(objectType)
     ensureCustomDrawingUi()
     
     if objectType == "Circle" then
-        return Circle.new()
+        return createCircle()
     elseif objectType == "Line" then
-        return Line.new()
+        return createLine()
     elseif objectType == "Text" then
-        return Text.new()
+        return createText()
     elseif objectType == "Square" then
-        return Square.new()
+        return createSquare()
     elseif objectType == "Triangle" then
-        return Triangle.new()
+        return createTriangle()
     else
         error("Unknown object type: " .. tostring(objectType))
     end
