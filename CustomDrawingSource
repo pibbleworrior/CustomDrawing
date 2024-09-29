@@ -38,7 +38,7 @@ function Line.new()
 
     -- Create the frame for the line
     self.frame = Instance.new("Frame")
-    self.frame.Name = "LineFrame" -- Assign a unique name for identification
+    self.frame.Name = "LineFrame"
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
     self.frame.Parent = self.screenGui
@@ -70,10 +70,11 @@ function Line:update()
     self.frame.BackgroundColor3 = self.Color -- Must be set explicitly
 end
 
+-- Automatically update whenever any property is changed
 setmetatable(Line, {
     __newindex = function(self, key, value)
         rawset(self, key, value)
-        self:update() -- Automatically update when a field changes
+        self:update() -- Automatically call update on every change
     end
 })
 
@@ -88,7 +89,7 @@ function Text.new()
 
     -- Create the text label
     self.label = Instance.new("TextLabel")
-    self.label.Name = "TextLabel" -- Assign a unique name
+    self.label.Name = "TextLabel"
     self.label.BackgroundTransparency = 1 -- No background
     self.label.Parent = self.screenGui
 
@@ -101,19 +102,19 @@ function Text.new()
     self.OutlineColor = nil
     self.Position = nil
     self.Font = nil
-    self.TextColor = nil -- Explicit color setting required
+    self.TextColor = nil
 
     return self
 end
 
 function Text:update()
-    if not self.Text or not self.Size or not self.Position or not self.TextColor then return end -- Ensure necessary fields are set
+    if not self.Text or not self.Size or not self.Position or not self.TextColor then return end
 
     self.label.Text = self.Text
     self.label.Font = self.Font or Enum.Font.SourceSans
     self.label.TextSize = self.Size
     self.label.TextTransparency = self.Transparency or 0
-    self.label.TextColor3 = self.TextColor -- Explicit color
+    self.label.TextColor3 = self.TextColor
     self.label.TextStrokeTransparency = self.Outline and 0 or 1
     self.label.TextStrokeColor3 = self.OutlineColor or Color3.new(0, 0, 0)
 
@@ -124,10 +125,11 @@ function Text:update()
     end
 end
 
+-- Automatically update whenever any property is changed
 setmetatable(Text, {
     __newindex = function(self, key, value)
         rawset(self, key, value)
-        self:update() -- Automatically update when a field changes
+        self:update() -- Automatically call update on every change
     end
 })
 
@@ -142,7 +144,7 @@ function Circle.new()
 
     -- Create a Frame to simulate the circle using UICorner
     self.frame = Instance.new("Frame")
-    self.frame.Name = "CircleFrame" -- Assign a unique name
+    self.frame.Name = "CircleFrame"
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.BorderSizePixel = 0
     self.frame.Parent = self.screenGui
@@ -157,7 +159,7 @@ function Circle.new()
     self.Radius = nil
     self.Filled = nil
     self.Position = nil
-    self.Color = nil -- Explicit color setting required
+    self.Color = nil
 
     return self
 end
@@ -179,10 +181,11 @@ function Circle:update()
     end
 end
 
+-- Automatically update whenever any property is changed
 setmetatable(Circle, {
     __newindex = function(self, key, value)
         rawset(self, key, value)
-        self:update() -- Automatically update when a field changes
+        self:update() -- Automatically call update on every change
     end
 })
 
