@@ -38,7 +38,7 @@ function Circle.new()
     local gui = ensureCustomDrawingUi()
     local self = setmetatable(BaseObject:new("Circle", gui), Circle)
 
-    -- Create the UI representation for the circle (ImageLabel or Frame)
+    -- Create the UI representation for the circle using Frame + UICorner
     self.frame = Instance.new("Frame")
     self.frame.Name = "Circle"
     self.frame.BackgroundColor3 = Color3.new(1, 1, 1)
@@ -47,7 +47,17 @@ function Circle.new()
     self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
     self.frame.Parent = gui
 
-    self.size = 50 -- Default size
+    -- Add UICorner for circular appearance
+    local corner = Instance.new("UICorner", self.frame)
+    corner.CornerRadius = UDim.new(1, 0) -- 50% corner rounding
+
+    -- Add UIStroke for non-filled circle outline
+    self.stroke = Instance.new("UIStroke", self.frame)
+    self.stroke.Thickness = 2
+    self.stroke.Color = Color3.new(1, 1, 1) -- White outline
+
+    -- Default properties
+    self.size = 50 -- Default radius
     self.position = Vector2.new(100, 100) -- Default position
     self.transparency = 0
     self.filled = false
@@ -57,26 +67,26 @@ function Circle.new()
 end
 
 function Circle:updateVisual()
-    self.frame.Size = UDim2.new(0, self.size, 0, self.size)
+    -- Apply the radius (size)
+    self.frame.Size = UDim2.new(0, self.size * 2, 0, self.size * 2)
+    -- Apply the position
     self.frame.Position = UDim2.new(0, self.position.X, 0, self.position.Y)
+    -- Apply the transparency
     self.frame.BackgroundTransparency = self.transparency
+
+    -- Handle filled vs outline
     if self.filled then
-        self.frame.BackgroundColor3 = Color3.new(1, 1, 1) -- Filled color
+        self.frame.BackgroundTransparency = 0
+        self.stroke.Enabled = false -- Disable stroke for filled circle
     else
-        self.frame.BackgroundColor3 = Color3.new(0, 0, 0) -- Outline color
-        self.frame.BackgroundTransparency = 1 -- Transparent background for outline
-        -- Use a UIStroke for the outline
-        if not self.frame:FindFirstChild("UIStroke") then
-            local stroke = Instance.new("UIStroke", self.frame)
-            stroke.Color = Color3.new(1, 1, 1)
-        end
+        self.frame.BackgroundTransparency = 1
+        self.stroke.Enabled = true -- Enable stroke for outline
     end
 end
 
--- Dynamic property setting
 function Circle:Set(property, value)
     if property == "Radius" then
-        self.size = value * 2 -- Double radius to get diameter
+        self.size = value -- Radius is half of the size
     elseif property == "Position" then
         self.position = value
     elseif property == "Transparency" then
@@ -84,7 +94,7 @@ function Circle:Set(property, value)
     elseif property == "Filled" then
         self.filled = value
     end
-    self:updateVisual()
+    self:updateVisual() -- Apply updates
 end
 
 -- Line class
@@ -129,7 +139,7 @@ function Line:Set(property, value)
     elseif property == "Thickness" then
         self.thickness = value
     end
-    self:updateVisual()
+    self:updateVisual() -- Apply updates
 end
 
 -- Text class
@@ -170,7 +180,7 @@ function Text:Set(property, value)
     elseif property == "Position" then
         self.position = value
     end
-    self:updateVisual()
+    self:updateVisual() -- Apply updates
 end
 
 -- Factory method to create new drawable objects
