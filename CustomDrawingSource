@@ -32,6 +32,9 @@ local function createCircle()
             else
                 warn("Invalid property for Circle: " .. tostring(key))
             end
+        end,
+        __tostring = function()
+            return "Circle"
         end
     })
 end
@@ -49,6 +52,9 @@ local function createLine()
             else
                 warn("Invalid property for Line: " .. tostring(key))
             end
+        end,
+        __tostring = function()
+            return "Line"
         end
     })
 end
@@ -66,6 +72,9 @@ local function createText()
             else
                 warn("Invalid property for Text: " .. tostring(key))
             end
+        end,
+        __tostring = function()
+            return "Text"
         end
     })
 end
@@ -83,6 +92,9 @@ local function createSquare()
             else
                 warn("Invalid property for Square: " .. tostring(key))
             end
+        end,
+        __tostring = function()
+            return "Square"
         end
     })
 end
@@ -100,6 +112,9 @@ local function createTriangle()
             else
                 warn("Invalid property for Triangle: " .. tostring(key))
             end
+        end,
+        __tostring = function()
+            return "Triangle"
         end
     })
 end
