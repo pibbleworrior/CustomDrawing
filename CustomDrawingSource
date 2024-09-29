@@ -35,7 +35,7 @@ local function setPropertyAndUpdate(self, key, value)
 end
 
 ------------------------------------------------
--- Line class (inherits from DrawingObject)
+-- Line class
 ------------------------------------------------
 local Line = {}
 Line.__index = Line
@@ -88,7 +88,7 @@ setmetatable(Line, {
 })
 
 ------------------------------------------------
--- Text class (inherits from DrawingObject)
+-- Text class
 ------------------------------------------------
 local Text = {}
 Text.__index = Text
@@ -141,7 +141,7 @@ setmetatable(Text, {
 })
 
 ------------------------------------------------
--- Circle class (inherits from DrawingObject)
+-- Circle class
 ------------------------------------------------
 local Circle = {}
 Circle.__index = Circle
@@ -196,7 +196,7 @@ setmetatable(Circle, {
 })
 
 ------------------------------------------------
--- Square class (inherits from DrawingObject)
+-- Square class
 ------------------------------------------------
 local Square = {}
 Square.__index = Square
