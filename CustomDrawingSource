@@ -27,11 +27,14 @@ function DrawingObject.new()
     return self
 end
 
--- Set property and trigger an update
+-- Set property and trigger an update only when explicitly changed
 local function setPropertyAndUpdate(self, key, value)
-    self.properties[key] = value -- Store the property
-    if self.update then
-        self:update(key) -- Trigger an update
+    -- Only set the property if it's different
+    if self.properties[key] ~= value then
+        self.properties[key] = value -- Store the property
+        if self.update then
+            self:update(key) -- Trigger an update
+        end
     end
 end
 
@@ -54,6 +57,7 @@ function Line.new()
 end
 
 function Line:update()
+    -- Only update if From and To are set by the user
     if self.properties.From and self.properties.To then
         local deltaX = self.properties.To.X - self.properties.From.X
         local deltaY = self.properties.To.Y - self.properties.From.Y
@@ -96,6 +100,7 @@ function Text.new()
 end
 
 function Text:update()
+    -- Update only if the property has been set
     if self.properties.Text then
         self.label.Text = self.properties.Text
     end
@@ -145,6 +150,7 @@ function Circle.new()
 end
 
 function Circle:update()
+    -- Update only if the necessary properties are set by the user
     if self.properties.Radius and self.properties.Position then
         self.frame.Size = UDim2.new(0, self.properties.Radius * 2, 0, self.properties.Radius * 2)
         self.frame.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
@@ -229,7 +235,7 @@ function Triangle.new()
 end
 
 function Triangle:update()
-    -- Placeholder for proper triangle drawing logic. Currently using a frame.
+    -- Only update if PointA, PointB, and PointC are set
     if self.properties.PointA and self.properties.PointB and self.properties.PointC then
         local midX = (self.properties.PointA.X + self.properties.PointB.X + self.properties.PointC.X) / 3
         local midY = (self.properties.PointA.Y + self.properties.PointB.Y + self.properties.PointC.Y) / 3
