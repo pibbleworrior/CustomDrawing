@@ -48,8 +48,8 @@ function Circle.new()
     self.frame.Parent = gui
 
     -- Add UICorner for circular appearance
-    local corner = Instance.new("UICorner", self.frame)
-    corner.CornerRadius = UDim.new(1, 0) -- 50% corner rounding
+    self.corner = Instance.new("UICorner", self.frame)
+    self.corner.CornerRadius = UDim.new(1, 0) -- 50% corner rounding
 
     -- Add UIStroke for non-filled circle outline
     self.stroke = Instance.new("UIStroke", self.frame)
@@ -68,7 +68,7 @@ end
 
 function Circle:updateVisual()
     -- Apply the radius (size)
-    self.frame.Size = UDim2.new(0, self.size * 2, 0, self.size * 2)
+    self.frame.Size = UDim2.new(0, self.size * 2, 0, self.size * 2) -- Double radius for diameter
     -- Apply the position
     self.frame.Position = UDim2.new(0, self.position.X, 0, self.position.Y)
     -- Apply the transparency
@@ -105,7 +105,7 @@ function Line.new()
     local gui = ensureCustomDrawingUi()
     local self = setmetatable(BaseObject:new("Line", gui), Line)
 
-    -- Create a Frame or ImageLabel to represent the line
+    -- Create a Frame to represent the line
     self.frame = Instance.new("Frame")
     self.frame.Name = "Line"
     self.frame.BackgroundColor3 = Color3.new(1, 1, 1)
