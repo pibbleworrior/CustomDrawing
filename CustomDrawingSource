@@ -22,21 +22,13 @@ end
 -- Circle handler
 local function createCircle()
     local circle = Drawing.new("Circle")
-    return setmetatable({
-        Radius = circle.Radius,
-        Position = circle.Position,
-        Transparency = circle.Transparency,
-        Filled = circle.Filled,
-        Color = circle.Color,
-        Visible = circle.Visible,
-        _circle = circle
-    }, {
-        __index = function(t, key)
-            return t._circle[key]
+    return setmetatable({}, {
+        __index = function(_, key)
+            return circle[key]
         end,
-        __newindex = function(t, key, value)
-            if t._circle[key] ~= nil then
-                t._circle[key] = value
+        __newindex = function(_, key, value)
+            if circle[key] ~= nil then
+                circle[key] = value
             else
                 warn("Invalid property for Circle: " .. tostring(key))
             end
@@ -47,21 +39,13 @@ end
 -- Line handler
 local function createLine()
     local line = Drawing.new("Line")
-    return setmetatable({
-        From = line.From,
-        To = line.To,
-        Thickness = line.Thickness,
-        Transparency = line.Transparency,
-        Color = line.Color,
-        Visible = line.Visible,
-        _line = line
-    }, {
-        __index = function(t, key)
-            return t._line[key]
+    return setmetatable({}, {
+        __index = function(_, key)
+            return line[key]
         end,
-        __newindex = function(t, key, value)
-            if t._line[key] ~= nil then
-                t._line[key] = value
+        __newindex = function(_, key, value)
+            if line[key] ~= nil then
+                line[key] = value
             else
                 warn("Invalid property for Line: " .. tostring(key))
             end
@@ -72,24 +56,13 @@ end
 -- Text handler
 local function createText()
     local text = Drawing.new("Text")
-    return setmetatable({
-        Text = text.Text,
-        Size = text.Size,
-        Position = text.Position,
-        Transparency = text.Transparency,
-        Outline = text.Outline,
-        OutlineColor = text.OutlineColor,
-        Font = text.Font,
-        Color = text.Color,
-        Visible = text.Visible,
-        _text = text
-    }, {
-        __index = function(t, key)
-            return t._text[key]
+    return setmetatable({}, {
+        __index = function(_, key)
+            return text[key]
         end,
-        __newindex = function(t, key, value)
-            if t._text[key] ~= nil then
-                t._text[key] = value
+        __newindex = function(_, key, value)
+            if text[key] ~= nil then
+                text[key] = value
             else
                 warn("Invalid property for Text: " .. tostring(key))
             end
@@ -100,21 +73,13 @@ end
 -- Square handler (Rectangle)
 local function createSquare()
     local square = Drawing.new("Square")
-    return setmetatable({
-        Size = square.Size,
-        Position = square.Position,
-        Transparency = square.Transparency,
-        Filled = square.Filled,
-        Color = square.Color,
-        Visible = square.Visible,
-        _square = square
-    }, {
-        __index = function(t, key)
-            return t._square[key]
+    return setmetatable({}, {
+        __index = function(_, key)
+            return square[key]
         end,
-        __newindex = function(t, key, value)
-            if t._square[key] ~= nil then
-                t._square[key] = value
+        __newindex = function(_, key, value)
+            if square[key] ~= nil then
+                square[key] = value
             else
                 warn("Invalid property for Square: " .. tostring(key))
             end
@@ -125,22 +90,13 @@ end
 -- Triangle handler
 local function createTriangle()
     local triangle = Drawing.new("Triangle")
-    return setmetatable({
-        PointA = triangle.PointA,
-        PointB = triangle.PointB,
-        PointC = triangle.PointC,
-        Transparency = triangle.Transparency,
-        Filled = triangle.Filled,
-        Color = triangle.Color,
-        Visible = triangle.Visible,
-        _triangle = triangle
-    }, {
-        __index = function(t, key)
-            return t._triangle[key]
+    return setmetatable({}, {
+        __index = function(_, key)
+            return triangle[key]
         end,
-        __newindex = function(t, key, value)
-            if t._triangle[key] ~= nil then
-                t._triangle[key] = value
+        __newindex = function(_, key, value)
+            if triangle[key] ~= nil then
+                triangle[key] = value
             else
                 warn("Invalid property for Triangle: " .. tostring(key))
             end
