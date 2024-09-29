@@ -23,18 +23,14 @@ DrawingObject.__index = DrawingObject
 function DrawingObject.new()
     local self = setmetatable({}, DrawingObject)
     self.screenGui = getOrCreateScreenGui()  -- Reuse or create a ScreenGui
-    self.properties = {} -- Store properties here
     return self
 end
 
--- Set property and trigger an update only when explicitly changed
+-- Set property and trigger an update
 local function setPropertyAndUpdate(self, key, value)
-    -- Only set the property if it's different
-    if self.properties[key] ~= value then
-        self.properties[key] = value -- Store the property
-        if self.update then
-            self:update(key) -- Trigger an update
-        end
+    self[key] = value  -- Store the property
+    if self.update then
+        self:update(key)  -- Call the update function after a property is changed
     end
 end
 
@@ -57,71 +53,25 @@ function Line.new()
 end
 
 function Line:update()
-    -- Only update if From and To are set by the user
-    if self.properties.From and self.properties.To then
-        local deltaX = self.properties.To.X - self.properties.From.X
-        local deltaY = self.properties.To.Y - self.properties.From.Y
+    if self.From and self.To then
+        local deltaX = self.To.X - self.From.X
+        local deltaY = self.To.Y - self.From.Y
         local distance = math.sqrt(deltaX * deltaX + deltaY * deltaY)
 
-        local midX = (self.properties.From.X + self.properties.To.X) / 2
-        local midY = (self.properties.From.Y + self.properties.To.Y) / 2
+        local midX = (self.From.X + self.To.X) / 2
+        local midY = (self.From.Y + self.To.Y) / 2
 
-        self.frame.Size = UDim2.new(0, distance, 0, self.properties.Thickness or 1)
+        self.frame.Size = UDim2.new(0, distance, 0, self.Thickness or 1)
         self.frame.Position = UDim2.new(0, midX, 0, midY)
         self.frame.Rotation = math.deg(math.atan2(deltaY, deltaX))
 
-        if self.properties.Transparency then
-            self.frame.BackgroundTransparency = self.properties.Transparency
+        if self.Transparency then
+            self.frame.BackgroundTransparency = self.Transparency
         end
     end
 end
 
 setmetatable(Line, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
-
-------------------------------------------------
--- Text class
-------------------------------------------------
-local Text = {}
-Text.__index = Text
-
-function Text.new()
-    local self = setmetatable(DrawingObject.new(), Text)
-
-    -- Create the text label
-    self.label = Instance.new("TextLabel")
-    self.label.BackgroundTransparency = 1  -- No background
-    self.label.Parent = self.screenGui
-
-    return self
-end
-
-function Text:update()
-    -- Update only if the property has been set
-    if self.properties.Text then
-        self.label.Text = self.properties.Text
-    end
-    if self.properties.Size then
-        self.label.TextSize = self.properties.Size
-    end
-    if self.properties.Transparency then
-        self.label.TextTransparency = self.properties.Transparency
-    end
-    if self.properties.Outline and self.properties.OutlineColor then
-        self.label.TextStrokeTransparency = 0
-        self.label.TextStrokeColor3 = self.properties.OutlineColor
-    else
-        self.label.TextStrokeTransparency = 1
-    end
-    if self.properties.Position then
-        self.label.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
-    end
-end
-
-setmetatable(Text, {
     __newindex = function(self, key, value)
         setPropertyAndUpdate(self, key, value)
     end
@@ -150,104 +100,16 @@ function Circle.new()
 end
 
 function Circle:update()
-    -- Update only if the necessary properties are set by the user
-    if self.properties.Radius and self.properties.Position then
-        self.frame.Size = UDim2.new(0, self.properties.Radius * 2, 0, self.properties.Radius * 2)
-        self.frame.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
+    if self.Radius and self.Position then
+        self.frame.Size = UDim2.new(0, self.Radius * 2, 0, self.Radius * 2)
+        self.frame.Position = UDim2.new(0, self.Position.X, 0, self.Position.Y)
     end
-    if self.properties.Transparency then
-        self.frame.BackgroundTransparency = self.properties.Transparency
-    end
-    if self.properties.Filled == false then
-        self.frame.BackgroundTransparency = 1
-        if self.properties.Thickness then
-            self.frame.BorderSizePixel = self.properties.Thickness
-        end
-    else
-        self.frame.BorderSizePixel = 0
+    if self.Transparency then
+        self.frame.BackgroundTransparency = self.Transparency
     end
 end
 
 setmetatable(Circle, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
-
-------------------------------------------------
--- Square class
-------------------------------------------------
-local Square = {}
-Square.__index = Square
-
-function Square.new()
-    local self = setmetatable(DrawingObject.new(), Square)
-
-    -- Create the frame for the square
-    self.frame = Instance.new("Frame")
-    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = self.screenGui
-
-    return self
-end
-
-function Square:update()
-    if self.properties.Size and self.properties.Position then
-        self.frame.Size = UDim2.new(0, self.properties.Size.X, 0, self.properties.Size.Y)
-        self.frame.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
-    end
-    if self.properties.Transparency then
-        self.frame.BackgroundTransparency = self.properties.Transparency
-    end
-    if self.properties.Filled == false then
-        self.frame.BackgroundTransparency = 1
-        if self.properties.Thickness then
-            self.frame.BorderSizePixel = self.properties.Thickness
-        end
-    else
-        self.frame.BorderSizePixel = 0
-    end
-end
-
-setmetatable(Square, {
-    __newindex = function(self, key, value)
-        setPropertyAndUpdate(self, key, value)
-    end
-})
-
-------------------------------------------------
--- Triangle class
-------------------------------------------------
-local Triangle = {}
-Triangle.__index = Triangle
-
-function Triangle.new()
-    local self = setmetatable(DrawingObject.new(), Triangle)
-
-    -- Create the triangle using 3 frames to form a triangular shape
-    self.frame = Instance.new("Frame")
-    self.frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    self.frame.BorderSizePixel = 0
-    self.frame.Parent = self.screenGui
-
-    return self
-end
-
-function Triangle:update()
-    -- Only update if PointA, PointB, and PointC are set
-    if self.properties.PointA and self.properties.PointB and self.properties.PointC then
-        local midX = (self.properties.PointA.X + self.properties.PointB.X + self.properties.PointC.X) / 3
-        local midY = (self.properties.PointA.Y + self.properties.PointB.Y + self.properties.PointC.Y) / 3
-        self.frame.Size = UDim2.new(0, 100, 0, 100) -- Placeholder size
-        self.frame.Position = UDim2.new(0, midX, 0, midY)
-    end
-    if self.properties.Transparency then
-        self.frame.BackgroundTransparency = self.properties.Transparency
-    end
-end
-
-setmetatable(Triangle, {
     __newindex = function(self, key, value)
         setPropertyAndUpdate(self, key, value)
     end
@@ -259,14 +121,8 @@ setmetatable(Triangle, {
 function CustomDrawing.new(drawType)
     if drawType == "Line" then
         return Line.new()
-    elseif drawType == "Text" then
-        return Text.new()
     elseif drawType == "Circle" then
         return Circle.new()
-    elseif drawType == "Square" then
-        return Square.new()
-    elseif drawType == "Triangle" then
-        return Triangle.new()
     else
         error("Invalid draw type: " .. tostring(drawType))
     end
