@@ -1,9 +1,6 @@
 local CustomDrawing = {}
 CustomDrawing.__index = CustomDrawing
 
-local RunService = game:GetService("RunService")
-local HeartbeatConnections = {}
-
 -- Helper function to get or create a ScreenGui in CoreGui
 local function getOrCreateScreenGui()
     local CoreGui = game:GetService("CoreGui")
@@ -27,19 +24,15 @@ function DrawingObject.new()
     local self = setmetatable({}, DrawingObject)
     self.screenGui = getOrCreateScreenGui()  -- Reuse or create a ScreenGui
     self.properties = {} -- Store properties here
-    self.shouldUpdate = true -- Flag to ensure the update loop runs
-
-    -- Automatically update every frame
-    local function updateLoop()
-        RunService.Heartbeat:Connect(function()
-            if self.shouldUpdate and self.update then
-                self:update()
-            end
-        end)
-    end
-
-    updateLoop()
     return self
+end
+
+-- Set property and trigger an update
+local function setPropertyAndUpdate(self, key, value)
+    self.properties[key] = value -- Store the property
+    if self.update then
+        self:update(key) -- Trigger an update
+    end
 end
 
 ------------------------------------------------
@@ -79,6 +72,12 @@ function Line:update()
     end
 end
 
+setmetatable(Line, {
+    __newindex = function(self, key, value)
+        setPropertyAndUpdate(self, key, value)
+    end
+})
+
 ------------------------------------------------
 -- Text class
 ------------------------------------------------
@@ -116,6 +115,12 @@ function Text:update()
         self.label.Position = UDim2.new(0, self.properties.Position.X, 0, self.properties.Position.Y)
     end
 end
+
+setmetatable(Text, {
+    __newindex = function(self, key, value)
+        setPropertyAndUpdate(self, key, value)
+    end
+})
 
 ------------------------------------------------
 -- Circle class
@@ -157,6 +162,12 @@ function Circle:update()
     end
 end
 
+setmetatable(Circle, {
+    __newindex = function(self, key, value)
+        setPropertyAndUpdate(self, key, value)
+    end
+})
+
 ------------------------------------------------
 -- Square class
 ------------------------------------------------
@@ -193,6 +204,12 @@ function Square:update()
     end
 end
 
+setmetatable(Square, {
+    __newindex = function(self, key, value)
+        setPropertyAndUpdate(self, key, value)
+    end
+})
+
 ------------------------------------------------
 -- Triangle class
 ------------------------------------------------
@@ -223,6 +240,12 @@ function Triangle:update()
         self.frame.BackgroundTransparency = self.properties.Transparency
     end
 end
+
+setmetatable(Triangle, {
+    __newindex = function(self, key, value)
+        setPropertyAndUpdate(self, key, value)
+    end
+})
 
 ------------------------------------------------
 -- CustomDrawing creation logic
