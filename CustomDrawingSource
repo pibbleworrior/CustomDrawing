@@ -12,6 +12,7 @@ local function ensureCustomDrawingUi()
     if not customDrawingUi then
         customDrawingUi = Instance.new("ScreenGui")
         customDrawingUi.Name = "CustomDrawingUi"
+        customDrawingUi.IgnoreGuiInset = true
         customDrawingUi.Parent = coreGui
     end
     
@@ -30,7 +31,11 @@ function DrawableObject.new(objectType)
 end
 
 function DrawableObject:Set(property, value)
-    self.instance[property] = value
+    if self.instance[property] ~= nil then
+        self.instance[property] = value
+    else
+        warn("Invalid property: " .. property)
+    end
 end
 
 function DrawableObject:Destroy()
@@ -44,6 +49,8 @@ Circle.__index = Circle
 function Circle.new()
     local self = DrawableObject.new("Circle")
     setmetatable(self, Circle)
+    self.instance.Radius = 50 -- Default radius
+    self.instance.Position = Vector2.new(0, 0)
     return self
 end
 
@@ -54,6 +61,8 @@ Line.__index = Line
 function Line.new()
     local self = DrawableObject.new("Line")
     setmetatable(self, Line)
+    self.instance.From = Vector2.new(0, 0)
+    self.instance.To = Vector2.new(100, 100)
     return self
 end
 
@@ -64,16 +73,21 @@ Text.__index = Text
 function Text.new()
     local self = DrawableObject.new("Text")
     setmetatable(self, Text)
+    self.instance.Text = "Default Text"
+    self.instance.Size = 20 -- Default size
+    self.instance.Position = Vector2.new(0, 0)
     return self
 end
 
--- Square class
+-- Square class (using "Square" as Rectangle in Drawing API)
 local Square = setmetatable({}, DrawableObject)
 Square.__index = Square
 
 function Square.new()
     local self = DrawableObject.new("Square")
     setmetatable(self, Square)
+    self.instance.Size = Vector2.new(100, 100)
+    self.instance.Position = Vector2.new(0, 0)
     return self
 end
 
@@ -84,6 +98,9 @@ Triangle.__index = Triangle
 function Triangle.new()
     local self = DrawableObject.new("Triangle")
     setmetatable(self, Triangle)
+    self.instance.PointA = Vector2.new(0, 0)
+    self.instance.PointB = Vector2.new(100, 100)
+    self.instance.PointC = Vector2.new(50, 50)
     return self
 end
 
