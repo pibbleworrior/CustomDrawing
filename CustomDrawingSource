@@ -19,55 +19,133 @@ local function ensureCustomDrawingUi()
     return customDrawingUi
 end
 
--- Drawable object metatable setup
-local function setupObject(objectType)
-    local drawingObject = Drawing.new(objectType)
-    return setmetatable({}, {
-        __index = function(_, key)
-            return drawingObject[key]
-        end,
-        __newindex = function(_, key, value)
-            if drawingObject[key] ~= nil then
-                drawingObject[key] = value
-            else
-                warn("Invalid property: " .. tostring(key))
-            end
-        end,
-        __tostring = function()
-            return objectType
-        end,
-        __metatable = "Locked"
-    }), drawingObject
-end
-
--- Circle class
+-- Circle handler
 local function createCircle()
-    local circle, _ = setupObject("Circle")
-    return circle
+    local circle = Drawing.new("Circle")
+    return setmetatable({
+        Radius = circle.Radius,
+        Position = circle.Position,
+        Transparency = circle.Transparency,
+        Filled = circle.Filled,
+        Color = circle.Color,
+        Visible = circle.Visible,
+        _circle = circle
+    }, {
+        __index = function(t, key)
+            return t._circle[key]
+        end,
+        __newindex = function(t, key, value)
+            if t._circle[key] ~= nil then
+                t._circle[key] = value
+            else
+                warn("Invalid property for Circle: " .. tostring(key))
+            end
+        end
+    })
 end
 
--- Line class
+-- Line handler
 local function createLine()
-    local line, _ = setupObject("Line")
-    return line
+    local line = Drawing.new("Line")
+    return setmetatable({
+        From = line.From,
+        To = line.To,
+        Thickness = line.Thickness,
+        Transparency = line.Transparency,
+        Color = line.Color,
+        Visible = line.Visible,
+        _line = line
+    }, {
+        __index = function(t, key)
+            return t._line[key]
+        end,
+        __newindex = function(t, key, value)
+            if t._line[key] ~= nil then
+                t._line[key] = value
+            else
+                warn("Invalid property for Line: " .. tostring(key))
+            end
+        end
+    })
 end
 
--- Text class
+-- Text handler
 local function createText()
-    local text, _ = setupObject("Text")
-    return text
+    local text = Drawing.new("Text")
+    return setmetatable({
+        Text = text.Text,
+        Size = text.Size,
+        Position = text.Position,
+        Transparency = text.Transparency,
+        Outline = text.Outline,
+        OutlineColor = text.OutlineColor,
+        Font = text.Font,
+        Color = text.Color,
+        Visible = text.Visible,
+        _text = text
+    }, {
+        __index = function(t, key)
+            return t._text[key]
+        end,
+        __newindex = function(t, key, value)
+            if t._text[key] ~= nil then
+                t._text[key] = value
+            else
+                warn("Invalid property for Text: " .. tostring(key))
+            end
+        end
+    })
 end
 
--- Square (Rectangle) class
+-- Square handler (Rectangle)
 local function createSquare()
-    local square, _ = setupObject("Square")
-    return square
+    local square = Drawing.new("Square")
+    return setmetatable({
+        Size = square.Size,
+        Position = square.Position,
+        Transparency = square.Transparency,
+        Filled = square.Filled,
+        Color = square.Color,
+        Visible = square.Visible,
+        _square = square
+    }, {
+        __index = function(t, key)
+            return t._square[key]
+        end,
+        __newindex = function(t, key, value)
+            if t._square[key] ~= nil then
+                t._square[key] = value
+            else
+                warn("Invalid property for Square: " .. tostring(key))
+            end
+        end
+    })
 end
 
--- Triangle class
+-- Triangle handler
 local function createTriangle()
-    local triangle, _ = setupObject("Triangle")
-    return triangle
+    local triangle = Drawing.new("Triangle")
+    return setmetatable({
+        PointA = triangle.PointA,
+        PointB = triangle.PointB,
+        PointC = triangle.PointC,
+        Transparency = triangle.Transparency,
+        Filled = triangle.Filled,
+        Color = triangle.Color,
+        Visible = triangle.Visible,
+        _triangle = triangle
+    }, {
+        __index = function(t, key)
+            return t._triangle[key]
+        end,
+        __newindex = function(t, key, value)
+            if t._triangle[key] ~= nil then
+                t._triangle[key] = value
+            else
+                warn("Invalid property for Triangle: " .. tostring(key))
+            end
+        end
+    })
 end
 
 -- Factory method to create new drawable objects
